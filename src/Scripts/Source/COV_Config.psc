@@ -116,6 +116,46 @@ EndFunction
 
 ; ---------------------------------------------------------------- text
 
+; CHIM lists the people around as "Name [RefID: FE07FE69]" and the model often copies that
+; into a target. NameOf gives the name part; RefActor the actor the RefID points to, which is
+; exact even when several NPCs share the name (None without a RefID).
+string Function NameOf(string s) global
+	int i = StringUtil.Find(s, "[RefID")
+	If i > -1
+		s = StringUtil.Substring(s, 0, i)
+	EndIf
+	Return Trim(s)
+EndFunction
+
+Actor Function RefActor(string s) global
+	int i = StringUtil.Find(s, "RefID")
+	If i < 0
+		Return None
+	EndIf
+	i += 5
+	int n = StringUtil.GetLength(s)
+	int id = 0
+	int digits = 0
+	While i < n && digits < 8
+		string c = StringUtil.GetNthChar(s, i)
+		int d = StringUtil.Find("0123456789ABCDEFabcdef", c)
+		If d > 15
+			d -= 6
+		EndIf
+		If d > -1
+			id = Math.LogicalOr(Math.LeftShift(id, 4), d)
+			digits += 1
+		ElseIf digits > 0
+			i = n ; the end of the number
+		EndIf
+		i += 1
+	EndWhile
+	If digits == 0
+		Return None
+	EndIf
+	Return Game.GetFormEx(id) as Actor
+EndFunction
+
 string Function Trim(string s) global
 	While StringUtil.GetLength(s) > 0 && StringUtil.GetNthChar(s, 0) == " "
 		s = StringUtil.Substring(s, 1)

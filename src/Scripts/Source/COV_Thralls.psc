@@ -129,6 +129,12 @@ EndFunction
 ; "Spare": by exact name, or every hostile woman / man near the player
 string Function Spare(string what) Global
 	Actor p = Game.GetPlayer()
+	Actor one = COV_Config.RefActor(what)
+	If one && !one.IsDead() && one != p
+		Protect(one)
+		Return "spared " + one.GetDisplayName() + ": companions will only beat them down, not kill them"
+	EndIf
+	what = COV_Config.NameOf(what)
 	string w = what
 	int sex = -1
 	If StringUtil.Find(w, "wom") > -1 || StringUtil.Find(w, "female") > -1 || StringUtil.Find(w, "girl") > -1 || StringUtil.Find(w, "lady") > -1

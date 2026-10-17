@@ -375,7 +375,11 @@ EndFunction
 ; the player, an AI agent, or anyone around by exact name: whom a vampire bites is often
 ; not an AI agent (a thrall to be, a bandit, a villager)
 Actor Function ResolvePartnerName(String name)
-	name = COV_Config.Trim(name)
+	Actor byRef = COV_Config.RefActor(name)
+	If byRef && !byRef.IsDead()
+		Return byRef
+	EndIf
+	name = COV_Config.NameOf(name)
 	Actor player = Game.GetPlayer()
 	If name == "" || name == "player" || name == "self" || name == player.GetDisplayName()
 		Return player
