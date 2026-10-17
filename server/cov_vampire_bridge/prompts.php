@@ -14,3 +14,6 @@ $GLOBALS["PROMPTS"]["cov_thrall"] = [
 $GLOBALS["PROMPTS"]["cov_vampire_turned"] = [
     "cue" => ["({$covNpc} reacts in character to the vampirism described above. If it happened to them: the new hunger, the light hurting their eyes, fear, anger or a dark thrill. If it happened to someone else: their honest reaction to that person now being a vampire. One or two short lines.) {$covTail}"],
 ];
+$GLOBALS["PROMPTS"]["cov_refused"] = [
+    "cue" => ["({$covNpc} wanted to do what is described above, but it did not happen in the game, for the reason given. {$covNpc} says one short line in character about it - surprise, annoyance, a joke, or what to do instead - and does not try the same action again now.) {$covTail}"],
+];

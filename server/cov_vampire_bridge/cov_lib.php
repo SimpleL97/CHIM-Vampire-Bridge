@@ -287,3 +287,37 @@ function covThrallPromptFor(string $npc): string
     }
     return "THRALLS:\n- " . implode("\n- ", $lines);
 }
+
+// ---------------------------------------------------------------- refused actions
+
+/** the LLM-facing names of this bridge's actions, for the refusal event */
+const COV_ACTION_NAMES = [
+    "ExtCmdCOV_Feed" => "Feed_On_Blood",
+    "ExtCmdCOV_VampireLord" => "Turn_Into_Vampire_Lord",
+    "ExtCmdCOV_Enthrall" => "Enthrall",
+    "ExtCmdCOV_Spare" => "Spare",
+    "ExtCmdCOV_Release" => "Release_Thrall",
+];
+
+/**
+ * A refused action of this bridge, as the event "cov_refused" the agent answers at once,
+ * or null. The game reports every outcome as "funcret": "command@<CodeName>@<agent>~<parameter>@<result>".
+ * Newer CHIM versions no longer call a plugin's FUNCRET handler for it (only an action's
+ * follow-up setting, which cannot tell a refusal from a success), so a refusal would only
+ * be seen in the next reply; as an event the agent says right away why it did not happen.
+ * Successful actions stay a plain funcret: no extra reply.
+ */
+function covRefusalEvent(string $data): ?string
+{
+    $parts = explode("@", $data, 4);
+    if (count($parts) < 4 || !isset(COV_ACTION_NAMES[$parts[1]])) {
+        return null;
+    }
+    $result = trim($parts[3]);
+    if (!preg_match('/^(cannot|refuses|nothing to)\b/i', $result)) {
+        return null;
+    }
+    $agent = trim(explode("~", $parts[2])[0]);
+    covLog("refused {$parts[1]} by {$agent}: {$result}");
+    return "({$agent} tried " . COV_ACTION_NAMES[$parts[1]] . ", but it did not happen - {$result})";
+}
