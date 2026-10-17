@@ -16,19 +16,25 @@ None of these are bundled: the release ships only this mod's own files.
 | **SkyUI** | [Nexus 12604](https://www.nexusmods.com/skyrimspecialedition/mods/12604) | The MCM framework (`SKI_ConfigBase`, `SKI_PlayerLoadGameAlias`) and the `Interface/Translations` loader. |
 | **MCM Helper** | [Nexus 53000](https://www.nexusmods.com/skyrimspecialedition/mods/53000) | Builds the MCM from `MCM/Config/CHIMVampireBridge/config.json` and stores the settings (`MCM.GetModSetting*`; `SetModSettingString` once, to bring over the NPC name lists of CHIM OStim Bridge 1.x). |
 
-## Optional
+## Optional, supported: my other CHIM bridges
 
-- **CHIM OStim Bridge** ([Nexus](https://www.nexusmods.com/skyrimspecialedition/mods/194761) ·
-  [GitHub](https://github.com/SimpleL97/CHIM-OStim-Bridge)) - my other mod. It reads this
-  mod's StorageUtil list `COV_Thralls`, so a thrall can be undressed, dressed and brought into
-  OStim scenes by name; the thrall prompt here mentions it only when it is installed.
-- **CHIM ORomance Bridge** ([GitHub](https://github.com/SimpleL97/CHIM-ORomance-Bridge)) -
-  love, marriage and children; nothing is shared but the events every agent hears.
+Built the same way, by the same author, and tested together with this one.
+
+| Mod | What works together |
+|---|---|
+| **CHIM OStim Bridge** ([Nexus](https://www.nexusmods.com/skyrimspecialedition/mods/194761) · [GitHub](https://github.com/SimpleL97/CHIM-OStim-Bridge)) | Reads this mod's StorageUtil list `COV_Thralls`, so a thrall can be undressed, dressed and brought into OStim scenes by name - also a thrall who is not an AI agent; the thrall prompt here mentions that only when it is installed. |
+| **CHIM ORomance Bridge** ([GitHub](https://github.com/SimpleL97/CHIM-ORomance-Bridge)) | Love, marriage and children through ORomance Plus; weddings, pregnancies and births reach the agents here, and a thrall bound or an NPC turned reaches the agents there. |
+
+None of them is required and none requires another; each works on its own. Installed together they
+see each other: in the game they share only the StorageUtil list `COV_Thralls`; on the CHIM
+server each plugin reads another one's settings only when that plugin's folder exists in
+`HerikaServer/ext` and it is switched on in its MCM. Events of every bridge go to CHIM's shared
+event log, so every AI agent nearby can talk about what happened in another one.
+
+## Also optional
+
 - **OStim Standalone** - not needed; when it is installed, nobody is bitten or enthralled in
   the middle of a scene.
-
-No mod of the family depends on another: on the server each plugin reads another one's
-settings only when that plugin's folder exists and it is switched on.
 
 ## To build
 
