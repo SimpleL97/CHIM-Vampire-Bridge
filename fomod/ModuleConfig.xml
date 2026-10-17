@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://qconsulting.ca/fo3/ModConfig5.0.xsd">
+  <moduleName>CHIM Vampire Bridge</moduleName>
+  <moduleImage path="fomod\images\banner.jpg" />
+
+  <!-- 00 Core: the plugin, scripts, MCM, and Data/CHIM/server-plugins/cov_vampire_bridge/<version>.dwpkg,
+       which CHIM's own ServerPluginSync uploads and activates on the CHIM server at game start. -->
+  <requiredInstallFiles>
+    <folder source="00 Core" destination="" priority="0"/>
+  </requiredInstallFiles>
+
+  <installSteps order="Explicit">
+    <installStep name="Options">
+      <optionalFileGroups order="Explicit">
+        <group name="Extras" type="SelectAny">
+          <plugins order="Explicit">
+            <plugin name="Manual server install tools">
+              <description>Not needed with a current CHIM: the server plugin is installed automatically when the game starts (CHIM syncs Data/CHIM/server-plugins to its server). Pick this only if that does not happen on your CHIM version. It adds the folder "CHIM Vampire Bridge Server Tools" with Install-ServerPlugin.bat (copies the plugin into the DwemerAI WSL distro) and Uninstall-ServerPlugin.bat (removes it and its actions).</description>
+              <image path="fomod\images\banner.jpg" />
+              <files>
+                <folder source="10 Server Tools" destination="" priority="0"/>
+              </files>
+              <typeDescriptor><type name="Optional"/></typeDescriptor>
+            </plugin>
+            <plugin name="Papyrus source files">
+              <description>The .psc sources in Data/Source/Scripts. Only needed if you want to read or change the scripts.</description>
+              <image path="fomod\images\banner.jpg" />
+              <files>
+                <folder source="20 Source" destination="" priority="0"/>
+              </files>
+              <typeDescriptor><type name="Optional"/></typeDescriptor>
+            </plugin>
+          </plugins>
+        </group>
+      </optionalFileGroups>
+    </installStep>
+  </installSteps>
+</config>

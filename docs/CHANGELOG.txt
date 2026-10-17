@@ -1,0 +1,18 @@
+CHIM Vampire Bridge - changelog
+================================
+
+1.0.0
+- First release: the vampire features of CHIM OStim Bridge 1.2 as a mod of their own,
+  with their own plugin, scripts, MCM and CHIM actions (ExtCmdCOV_*). They work as
+  they did there.
+- AI actions: Feed_On_Blood, Turn_Into_Vampire_Lord, Enthrall, Release_Thrall, Spare.
+- Blood thirst, vampirism by bite (Sanguinare Vampiris), Vampire Lords (Dawnguard's
+  own and the names in the MCM), thralls (Vampire Lords, the Volkihar court and the
+  names in the MCM), the player's lesser power "Vampire's Thrall".
+- Moves over by itself from CHIM OStim Bridge 1.x: bitten, turned and thrall NPCs of
+  the save, the vampire state on the CHIM server, the actions and the NPC name lists.
+- Works with CHIM OStim Bridge (thralls in scenes) and CHIM ORomance Bridge; none of
+  them needs another.
+- Notifications and a log file in the game and on the CHIM server (MCM: Debug).
+- Does not need OStim Standalone.
+- MCM through MCM Helper in 12 languages; the server plugin installs itself.

@@ -1,0 +1,21 @@
+# Text files keep LF on every platform, so a clone builds the same bytes as the release
+# (the released .psc, .php, .bat and .ps1 files all use LF and work as they are).
+* text=auto eol=lf
+
+# files that are released with CRLF
+*.bat text eol=crlf
+docs/CHANGELOG.txt text eol=crlf
+
+# SkyUI translation files: UTF-16 LE with BOM and CRLF - git must not touch them
+mcm/translations/*.txt binary
+
+# binaries
+*.esp binary
+*.esm binary
+*.esl binary
+*.pex binary
+*.bsa binary
+*.dwpkg binary
+*.png binary
+*.jpg binary
+*.zip binary

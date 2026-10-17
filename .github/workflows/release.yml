@@ -1,0 +1,114 @@
+# CHIM Vampire Bridge - builds the mod on GitHub and attaches it to releases.
+#
+# Every push and pull request: the whole mod is built from source (tools/build_linux.sh:
+# plugin, Papyrus scripts, CHIM server package, FOMOD archive) and the archive is kept as
+# the run's artifact "CHIM Vampire Bridge" - download it from the run to test a build.
+#
+# Publishing a GitHub release from a tag (v1.0.0): the tagged commit is built the same
+# way, its version must match the tag, and the archive is attached to the release.
+# Actions -> Run workflow with a tag attaches it again to an existing release.
+# (Uploading to Nexus Mods is added once the mod's first file is on Nexus: the upload
+# adds versions to an existing file and needs its file ID.)
+#
+# The Papyrus compiler is the open-source papyrus-compiler (MIT), built here from source
+# at a pinned commit with the V version its own release workflow uses; it type-checks
+# against the declaration-only headers in stubs/, so no game files are needed.
+
+name: Build and release
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Attach the build to an existing release, e.g. v1.0.0 (empty: only build)"
+        required: false
+
+permissions:
+  contents: read
+
+env:
+  ARCHIVE: "dist/CHIM Vampire Bridge.zip"
+  # papyrus-compiler master with the string escape fix (issue 19), after release 0.0.4
+  PAPYRUS_COMPILER_COMMIT: b9dc9951f4264084c8ded6721b20f0d81c021d58
+  V_VERSION: "0.5.1"
+  V_SHA256: 0c35c79343b308e0415619d8e6d8da340c6a24c18331123553cc686ffb18abf4
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - name: Which tag
+        id: tag
+        run: echo "tag=${{ github.event.release.tag_name || github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.tag.outputs.tag || github.ref }}
+
+      - name: Papyrus compiler from cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ~/papyrus-compiler
+          key: papyrus-compiler-${{ env.PAPYRUS_COMPILER_COMMIT }}-v${{ env.V_VERSION }}
+
+      - name: Build the Papyrus compiler
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          cd "$RUNNER_TEMP"
+          curl -fsSL -o v.zip "https://github.com/vlang/v/releases/download/$V_VERSION/v_linux.zip"
+          echo "$V_SHA256  v.zip" | sha256sum -c -
+          unzip -q v.zip
+          git clone --quiet https://github.com/russo-2025/papyrus-compiler.git pc
+          git -C pc checkout --quiet "$PAPYRUS_COMPILER_COMMIT"
+          (cd pc && ../v/v -prod -gc none -o bin/papyrus-compiler compiler.v)
+          mkdir -p ~/papyrus-compiler
+          cp pc/bin/papyrus-compiler ~/papyrus-compiler/
+
+      - name: Build the mod
+        run: |
+          ~/papyrus-compiler/papyrus-compiler version
+          bash tools/build_linux.sh ~/papyrus-compiler/papyrus-compiler dist
+
+      - name: Version matches the tag
+        if: steps.tag.outputs.tag != ''
+        run: |
+          FOUND=$(unzip -p "$ARCHIVE" fomod/info.xml | grep -o 'MachineVersion="[^"]*"' | cut -d'"' -f2)
+          TAG="${{ steps.tag.outputs.tag }}"
+          if [ "$FOUND" != "${TAG#v}" ]; then
+            echo "::error::the mod is version $FOUND, the tag is $TAG"; exit 1
+          fi
+          echo "version $FOUND OK"
+
+      - name: Keep the archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: CHIM Vampire Bridge
+          path: ${{ env.ARCHIVE }}
+          if-no-files-found: error
+
+  release:
+    needs: build
+    if: needs.build.outputs.tag != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # attach the archive to the release
+    steps:
+      - name: Get the archive
+        uses: actions/download-artifact@v4
+        with:
+          name: CHIM Vampire Bridge
+          path: dist
+
+      - name: Attach the archive to the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ needs.build.outputs.tag }}" "$ARCHIVE" --repo "$GITHUB_REPOSITORY" --clobber

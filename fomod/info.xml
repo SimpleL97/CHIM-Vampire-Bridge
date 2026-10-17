@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fomod>
+  <Name>CHIM Vampire Bridge</Name>
+  <Author>SaurOff</Author>
+  <Version MachineVersion="1.0.0">1.0.0</Version>
+  <Description>Vampires for CHIM AI agents: they drink blood (blood thirst) and can pass on vampirism with the bite, Vampire Lords turn you into a Vampire Lord the way Dawnguard does, and the Vampire Lords and the Volkihar court bind thralls who obey them and you in everything - enemies too, taken alive. You get the lesser power Vampire's Thrall once you are a Vampire Lord. Works on its own and together with CHIM OStim Bridge (thralls in scenes) and CHIM ORomance Bridge. Configured in the MCM.</Description>
+  <Groups>
+    <element>Gameplay</element>
+    <element>Immersion</element>
+  </Groups>
+</fomod>

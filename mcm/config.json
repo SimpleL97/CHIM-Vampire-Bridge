@@ -1,0 +1,210 @@
+{
+    "modName": "CHIMVampireBridge",
+    "displayName": "CHIM Vampire Bridge",
+    "minMcmVersion": 9,
+    "cursorFillMode": "topToBottom",
+    "pages": [
+        {
+            "pageDisplayName": "$COV_pGeneral",
+            "cursorFillMode": "topToBottom",
+            "content": [
+                {
+                    "text": "CHIM Vampire Bridge 1.0.0 by SaurOff",
+                    "type": "header"
+                },
+                {
+                    "id": "bEnabled:General",
+                    "text": "$COV_Enabled",
+                    "type": "toggle",
+                    "help": "$COV_EnabledH",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
+                    "id": "fRange:General",
+                    "text": "$COV_Range",
+                    "type": "slider",
+                    "help": "$COV_RangeH",
+                    "valueOptions": {
+                        "min": 5,
+                        "max": 100,
+                        "step": 5,
+                        "formatString": "{0} m",
+                        "sourceType": "ModSettingFloat"
+                    }
+                },
+                {
+                    "text": "$COV_hDebug",
+                    "type": "header"
+                },
+                {
+                    "id": "bNotify:Debug",
+                    "text": "$COV_Notify",
+                    "type": "toggle",
+                    "help": "$COV_NotifyH",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
+                    "id": "bLog:Debug",
+                    "text": "$COV_Log",
+                    "type": "toggle",
+                    "help": "$COV_LogH",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                }
+            ]
+        },
+        {
+            "pageDisplayName": "$COV_pVampires",
+            "cursorFillMode": "topToBottom",
+            "content": [
+                {
+                    "text": "$COV_hVampires",
+                    "type": "header"
+                },
+                {
+                    "id": "sVampires:Vampires",
+                    "text": "$COV_Vampires",
+                    "type": "input",
+                    "help": "$COV_VampiresH",
+                    "valueOptions": {
+                        "sourceType": "ModSettingString"
+                    }
+                },
+                {
+                    "id": "iBloodHours:Vampires",
+                    "text": "$COV_BloodHours",
+                    "type": "slider",
+                    "help": "$COV_BloodHoursH",
+                    "valueOptions": {
+                        "min": 1,
+                        "max": 120,
+                        "step": 1,
+                        "formatString": "{0} h",
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "text": "$COV_hBite",
+                    "type": "header"
+                },
+                {
+                    "id": "bBiteCurse:Vampires",
+                    "text": "$COV_BiteCurse",
+                    "type": "toggle",
+                    "help": "$COV_BiteCurseH",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
+                    "id": "iCurseChance:Vampires",
+                    "text": "$COV_CurseChance",
+                    "type": "slider",
+                    "help": "$COV_CurseChanceH",
+                    "valueOptions": {
+                        "min": 0,
+                        "max": 100,
+                        "step": 5,
+                        "formatString": "{0}%",
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "id": "iTurnDays:Vampires",
+                    "text": "$COV_TurnDays",
+                    "type": "slider",
+                    "help": "$COV_TurnDaysH",
+                    "valueOptions": {
+                        "min": 1,
+                        "max": 30,
+                        "step": 1,
+                        "formatString": "{0} d",
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "text": "$COV_hLords",
+                    "type": "header"
+                },
+                {
+                    "id": "sVampireLords:Vampires",
+                    "text": "$COV_VampireLords",
+                    "type": "input",
+                    "help": "$COV_VampireLordsH",
+                    "valueOptions": {
+                        "sourceType": "ModSettingString"
+                    }
+                },
+                {
+                    "id": "bLordGift:Vampires",
+                    "text": "$COV_LordGift",
+                    "type": "toggle",
+                    "help": "$COV_LordGiftH",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                }
+            ]
+        },
+        {
+            "pageDisplayName": "$COV_pThralls",
+            "cursorFillMode": "topToBottom",
+            "content": [
+                {
+                    "text": "$COV_hThralls",
+                    "type": "header"
+                },
+                {
+                    "id": "bThralls:Thralls",
+                    "text": "$COV_Thralls",
+                    "type": "toggle",
+                    "help": "$COV_ThrallsH",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
+                    "id": "bThrallCourt:Thralls",
+                    "text": "$COV_ThrallCourt",
+                    "type": "toggle",
+                    "help": "$COV_ThrallCourtH",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
+                    "id": "sThrallMasters:Thralls",
+                    "text": "$COV_ThrallMasters",
+                    "type": "input",
+                    "help": "$COV_ThrallMastersH",
+                    "valueOptions": {
+                        "sourceType": "ModSettingString"
+                    }
+                },
+                {
+                    "id": "bThrallPower:Thralls",
+                    "text": "$COV_ThrallPower",
+                    "type": "toggle",
+                    "help": "$COV_ThrallPowerH",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
+                    "id": "bThrallTeammate:Thralls",
+                    "text": "$COV_ThrallTeammate",
+                    "type": "toggle",
+                    "help": "$COV_ThrallTeammateH",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                }
+            ]
+        }
+    ]
+}
