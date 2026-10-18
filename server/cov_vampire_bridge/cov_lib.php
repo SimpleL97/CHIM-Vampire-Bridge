@@ -412,14 +412,20 @@ function covSpareCue(): string
  */
 function covDownedInstruction(string $data): string
 {
-    $herika = strval($GLOBALS["HERIKA_NAME"] ?? "");
     $player = strval($GLOBALS["PLAYER_NAME"] ?? "the player");
-    $what = trim($data, " ()");
+    // "Context location: ...)Lucius:(<names> - ... near <lord>)": the event itself, and the
+    // lord from it - in preprocessing CHIM has not set HERIKA_NAME to the agent yet (it said
+    // "The Narrator binds ...")
+    $what = preg_match('/\(([^()]*)\)\s*$/u', $data, $m) ? trim($m[1]) : trim($data, " ()");
+    $herika = preg_match('/ near (.+)$/u', $what, $m) ? trim($m[1]) : strval($GLOBALS["HERIKA_NAME"] ?? "");
+    if ($herika === "" || $herika === "The Narrator") {
+        $herika = "the Vampire Lord";
+    }
     covLog("downed: {$what} -> {$herika}");
     if (!empty(covState()["spare_thralls"])) {
         // the player ordered them made thralls: no "if"
         return "The Narrator: {$what}. {$player} ordered them made thralls: {$herika} binds the first of them right now - action Enthrall, target that name; the others come next.";
     }
     return "The Narrator: {$what}. If {$player} wants enemies like these as thralls (look at what {$player} said), {$herika} binds the first of them right now: action Enthrall, target that name - the others come next. "
-        . "Otherwise {$herika} says one short line about them and does nothing.";
+        . "If {$player} let them go or said not to bring them back, {$herika} leaves them be. Otherwise {$herika} says one short line about them and does nothing.";
 }

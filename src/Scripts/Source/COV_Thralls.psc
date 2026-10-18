@@ -113,6 +113,14 @@ Spell Function SurrenderMarker() Global
 	Return Game.GetFormFromFile(0x000807, "DB Surrender.esp") as Spell ; DBSurrenderMarker
 EndFunction
 
+; a thrall the player let go less than a game day ago: not a captive to be bitten again
+bool Function RecentlyReleased(Actor a) Global
+	If !StorageUtil.HasFloatValue(a, "COV_ReleasedAt")
+		Return False
+	EndIf
+	Return Utility.GetCurrentGameTime() - StorageUtil.GetFloatValue(a, "COV_ReleasedAt") < 1.0
+EndFunction
+
 ; Enemies kneeling in Surrender join the captives (COV_Spared), so the nearest Vampire Lord
 ; hears of them too. Only kept alive by the standing order if it covers them (SpareSweep).
 Function CollectKneeling() Global
@@ -125,7 +133,7 @@ Function CollectKneeling() Global
 	int i = 0
 	While i < around.Length
 		Actor a = around[i]
-		If a && a != p && !a.IsDead() && !IsThrall(a) && a.HasSpell(marker) && !StorageUtil.FormListHas(None, "COV_Spared", a)
+		If a && a != p && !a.IsDead() && !IsThrall(a) && a.HasSpell(marker) && !StorageUtil.FormListHas(None, "COV_Spared", a) && !RecentlyReleased(a)
 			StorageUtil.SetIntValue(a, "COV_Kneeling", 1)
 			StorageUtil.FormListAdd(None, "COV_Spared", a, False)
 			COV_Config.Log(a.GetDisplayName() + " kneels in surrender")
@@ -447,7 +455,7 @@ Function CheckDowned() Global
 	int i = count - 1
 	While i >= 0
 		Actor a = StorageUtil.FormListGet(None, "COV_Spared", i) as Actor
-		If !a || a.IsDead() || IsThrall(a)
+		If !a || a.IsDead() || IsThrall(a) || RecentlyReleased(a)
 			StorageUtil.FormListRemoveAt(None, "COV_Spared", i)
 			If a
 				StorageUtil.UnsetFloatValue(a, "COV_DownReported")
@@ -544,7 +552,9 @@ string Function Bind(Actor target, Actor master) Global
 	; player's companions no longer attack them; ordinary people keep theirs
 	If target.IsHostileToActor(player) || target.IsInCombat()
 		target.RemoveFromAllFactions()
+		StorageUtil.SetIntValue(target, "COV_WasFoe", 1)
 	EndIf
+	StorageUtil.UnsetFloatValue(target, "COV_ReleasedAt")
 	Calm(target)
 	target.SetActorValue("Aggression", 0.0)
 	Protect(target) ; a thrall is not killed by a stray blow of the player's companions
@@ -572,11 +582,21 @@ string Function Release(Actor target) Global
 	; the server keeps this for good: the freed one remembers having been a thrall
 	COV_Events.SendState("released|" + COV_Config.Name(who) + "=" + COV_Config.Name(StorageUtil.GetStringValue(target, "COV_ThrallMaster")))
 	StorageUtil.FormListRemove(None, "COV_Thralls", target, True)
-	target.SetActorValue("Aggression", StorageUtil.GetFloatValue(target, "COV_ThrallAggression", target.GetBaseActorValue("Aggression")))
+	If StorageUtil.GetIntValue(target, "COV_WasFoe") == 1
+		; a former enemy (or one raised from the dead) leaves in peace: their old factions are
+		; gone, but their bandit aggression would set them on the player's people at once
+		target.SetActorValue("Aggression", 0.0)
+		target.StopCombat()
+	Else
+		target.SetActorValue("Aggression", StorageUtil.GetFloatValue(target, "COV_ThrallAggression", target.GetBaseActorValue("Aggression")))
+	EndIf
 	If StorageUtil.GetIntValue(target, "COV_ThrallTeammate") == 1
 		target.SetPlayerTeammate(False)
 	EndIf
 	Unprotect(target)
+	; let go on purpose: not a captive to be bitten again (CollectKneeling, CheckDowned)
+	StorageUtil.SetFloatValue(target, "COV_ReleasedAt", Utility.GetCurrentGameTime())
+	StorageUtil.FormListRemove(None, "COV_Spared", target, True)
 	StorageUtil.UnsetStringValue(target, "COV_ThrallMaster")
 	StorageUtil.UnsetFloatValue(target, "COV_ThrallAggression")
 	StorageUtil.UnsetIntValue(target, "COV_ThrallTeammate")
