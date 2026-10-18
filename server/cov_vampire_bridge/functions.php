@@ -37,9 +37,10 @@ $GLOBALS["COV_ACTIONS"] = [
     "ExtCmdCOV_Spare" => [
         "name" => "Spare",
         "return" => "#HERIKA_NAME# makes sure someone is taken alive.",
-        "params" => ["target" => "Exact name of the one to keep alive, or \"women\" / \"men\" for every hostile woman / man here."],
-        "description" => "Keep someone alive in a fight: from now on companions only beat them down instead of killing them (only #PLAYER_NAME# could still kill them). When #PLAYER_NAME# wants an enemy taken alive - to make them a thrall, to question them, or simply to spare them. "
-            . "Then, once they are down or the fight is over, a Vampire Lord or Volkihar noble can make them a thrall with Enthrall.",
+        "params" => ["target" => "Exact name of the one to keep alive, or \"women\" / \"men\" / \"everyone\" for every hostile woman / man / enemy - now and in the next fights; \"nobody\" ends that order."],
+        "description" => "Keep enemies alive in a fight: companions only beat them down instead of killing them (only #PLAYER_NAME# could still kill them). When #PLAYER_NAME# says not to kill someone - \"do not kill the women\", \"take them alive\" - to make them thralls, to question them, or simply to spare them; "
+            . "also when the order is given to all companions. \"women\" / \"men\" / \"everyone\" stays in force for the next fights until \"nobody\". "
+            . "A Vampire Lord or Volkihar noble can then bind the ones lying beaten down with Enthrall.",
     ],
     "ExtCmdCOV_Release" => [
         "name" => "Release_Thrall",

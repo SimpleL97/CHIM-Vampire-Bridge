@@ -61,7 +61,7 @@ Event OnChimCommand(String npcname, String command, String parameter)
 		ThrallAction(command, parameter)
 	ElseIf command == "ExtCmdCOV_Spare"
 		If ArgOf(parameter, 1) == ""
-			Report(command, parameter, "cannot: say whom to spare - a name, or women / men")
+			Report(command, parameter, "cannot: say whom to spare - a name, or women / men / everyone (nobody ends it)")
 		Else
 			Report(command, parameter, COV_Thralls.Spare(ArgOf(parameter, 1)))
 		EndIf

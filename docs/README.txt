@@ -68,9 +68,12 @@ there like any other action):
                          everything and is never hostile again. Enemies too, even
                          in the middle of a fight.
   Release_Thrall         set a thrall free; they remember having been a thrall.
-  Spare                  keep an enemy alive: companions only beat them down
-                         instead of killing them (by name, or "women" / "men").
-                         Then a Vampire Lord can make them a thrall.
+  Spare                  keep enemies alive: companions only beat them down
+                         instead of killing them - by name, or "women" / "men" /
+                         "everyone" as a standing order for this fight and the
+                         next ones ("nobody" lifts it). Just tell your companions
+                         "do not kill the women". When a spared enemy is beaten
+                         down, the nearest Vampire Lord hears it and can bind them.
 Once you are a Vampire Lord yourself you get the lesser power "Vampire's Thrall":
 equip it like a shout, look at someone close and use it (Z by default) - you bite
 them and they become your thrall; used on your own thrall it sets them free.

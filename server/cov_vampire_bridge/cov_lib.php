@@ -177,6 +177,14 @@ function covApplyGameState(string $data, float $now): void
         }
     } elseif (preg_match('/fed\|([^()\r\n]+)/u', $data, $m)) {
         $state["last_blood"][trim($m[1])] = $now;
+    } elseif (preg_match('/spare\|([^()\r\n]+)/u', $data, $m)) {
+        // the standing order to take enemies alive: women, men, enemies, or "-" for none
+        $order = trim($m[1]);
+        if (in_array($order, ["women", "men", "enemies"], true)) {
+            $state["spare"] = $order;
+        } else {
+            unset($state["spare"]);
+        }
     } else {
         return;
     }
@@ -331,35 +339,78 @@ function covRefusalEvent(string $data): ?string
 /**
  * Placed at the very end of the prompt, after CHIM OStim Bridge's own action rule: the
  * thrall notes alone are too far up - agents said "she is free" or "do it" and set no
- * action. Only for those who bind, free or command thralls (never for a thrall).
+ * action. The thrall part only for those who bind, free or command thralls (never for a
+ * thrall); a standing order to take enemies alive for everyone.
  */
 function covThrallActionRule(string $npc): string
 {
     $cfg = covConfig();
-    if (empty($cfg["enabled"]) || empty($cfg["thralls"]) || $npc === "" || $npc === "The Narrator") {
+    if (empty($cfg["enabled"]) || $npc === "" || $npc === "The Narrator") {
         return "";
     }
     $state = covState();
-    $thralls = $state["thralls"] ?? [];
+    $player = strval($GLOBALS["PLAYER_NAME"] ?? "the player");
+    $thralls = !empty($cfg["thralls"]) ? ($state["thralls"] ?? []) : [];
+    $isThrall = false;
     foreach ($thralls as $name => $master) {
-        if (mb_strtolower($name) === mb_strtolower($npc)) {
-            return "";
-        }
+        $isThrall = $isThrall || mb_strtolower($name) === mb_strtolower($npc);
     }
     $lord = covIsLord($state, $npc);
-    $canBind = $lord || (!empty($cfg["thrall_court"]) && !empty($state["game_court"][mb_strtolower($npc)])) || covListed("thrall_masters", $npc);
+    $canBind = !empty($cfg["thralls"]) && ($lord || (!empty($cfg["thrall_court"]) && !empty($state["game_court"][mb_strtolower($npc)])) || covListed("thrall_masters", $npc));
     $mine = false;
     foreach ($thralls as $name => $master) {
         $mine = $mine || mb_strtolower($master) === mb_strtolower($npc);
     }
-    if (!$canBind && !$mine) {
+
+    $out = [];
+    // the order itself is asked for in the player's turn (covSpareCue); here what is in force
+    $order = strval($state["spare"] ?? "");
+    if ($order !== "") {
+        $out[] = "TAKING ENEMIES ALIVE - {$player}'s order, in force: hostile {$order} are only beaten down in a fight, never killed"
+            . ($canBind ? "; the ones lying beaten down you bind with Enthrall when {$player} wants them as thralls" : "")
+            . ". When {$player} wants them killed again: Spare, target \"nobody\".";
+    }
+    if (($canBind || $mine) && !$isThrall) {
+        $rule = "THRALLS IN THE GAME: words alone change nothing. In the same reply where you say it: set a thrall free -> action Release_Thrall, target their name; "
+            . "bind someone -> Enthrall, target their name";
+        if (covPeer("cob_ostim_bridge") !== null) {
+            $rule .= "; order a thrall to undress -> Undress, target their name; order a thrall into sex with {$player} -> Start_Intimate_Scene, target \"{$player}, <thrall's name>\"";
+        }
+        $out[] = $rule . ".";
+    }
+    return implode("\n", $out);
+}
+
+/**
+ * Added to the instruction of the player's turn (inputtext): "do not kill the women" was
+ * answered in words by every companion and nobody called Spare - placed among the rules at
+ * the end of the prompt it changed nothing (0 of 39 against the real model), here it is
+ * called about 3 times in 4. "" when the bridge is off.
+ */
+function covSpareCue(): string
+{
+    $cfg = covConfig();
+    if (empty($cfg["enabled"])) {
         return "";
     }
     $player = strval($GLOBALS["PLAYER_NAME"] ?? "the player");
-    $rule = "THRALLS IN THE GAME: words alone change nothing. In the same reply where you say it: set a thrall free -> action Release_Thrall, target their name; "
-        . "bind someone -> Enthrall, target their name";
-    if (covPeer("cob_ostim_bridge") !== null) {
-        $rule .= "; order a thrall to undress -> Undress, target their name; order a thrall into sex with {$player} -> Start_Intimate_Scene, target \"{$player}, <thrall's name>\"";
-    }
-    return $rule . ".";
+    return "(If {$player}'s last line, in any language, tells you or the companions not to kill some enemies - \"don't kill the women\", \"leave the girls alive\", \"take them alive\" - "
+        . "this reply's action is Spare with target \"women\", \"men\", \"everyone\" or a name; nobody has to be here now, the order holds for the next fights too. "
+        . "If {$player} wants them killed again: Spare, target \"nobody\".)";
+}
+
+/**
+ * "cov_downed" from the game (to the nearest Vampire Lord): "(<names> - spared on <player>'s
+ * order - lies beaten down but alive near <lord>)". CHIM gives an event of a plugin no
+ * actions at all, so it goes on as an "instruction", the one event type CHIM lets act -
+ * "The Narrator:" is the prefix CHIM strips from an instruction.
+ */
+function covDownedInstruction(string $data): string
+{
+    $herika = strval($GLOBALS["HERIKA_NAME"] ?? "");
+    $player = strval($GLOBALS["PLAYER_NAME"] ?? "the player");
+    $what = trim($data, " ()");
+    covLog("downed: {$what} -> {$herika}");
+    return "The Narrator: {$what}. If {$player} wants enemies like these as thralls (look at what {$player} said), {$herika} binds the first of them right now: action Enthrall, target that name - the others come next. "
+        . "Otherwise {$herika} says one short line about them and does nothing.";
 }

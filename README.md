@@ -30,8 +30,10 @@ release (FOMOD archive) instead of building it.
 
 - **AI actions** added to CHIM's action list: `Feed_On_Blood`, `Turn_Into_Vampire_Lord`
   (Dawnguard's own steps: the bite, the vampire change, the Vampire Lord power and perk
-  tree), `Enthrall` / `Release_Thrall`, `Spare` (companions take an enemy alive). Every
-  result is reported back to the AI, so a refusal is answered in character.
+  tree), `Enthrall` / `Release_Thrall`, `Spare` (companions take enemies alive - one by
+  name, or women / men / everyone as a standing order; the nearest Vampire Lord hears
+  when one is beaten down and can bind them). Every result is reported back to the AI,
+  so a refusal is answered in character.
 - **Blood thirst** for real game vampires, NPCs turned by a bite and the names in the MCM.
 - **Vampirism by bite**: the game's Sanguinare Vampiris; an NPC not cured in time is a
   vampire from then on.

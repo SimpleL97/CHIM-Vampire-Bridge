@@ -126,52 +126,198 @@ Function Unprotect(Actor a) Global
 	EndIf
 EndFunction
 
-; "Spare": by exact name, or every hostile woman / man near the player
+; "Spare": by exact name, or a standing order for every hostile woman / man / enemy - in
+; this fight and the next ones, until "nobody" ends it (StorageUtil "COV_SpareOrder":
+; 0 men, 1 women, 2 everyone; unset = no order). Spared actors are kept in the form list
+; "COV_Spared", so COV_Events can tell a Vampire Lord when one of them is beaten down.
 string Function Spare(string what) Global
 	Actor p = Game.GetPlayer()
 	Actor one = COV_Config.RefActor(what)
 	If one && !one.IsDead() && one != p
-		Protect(one)
+		SpareOne(one)
 		Return "spared " + one.GetDisplayName() + ": companions will only beat them down, not kill them"
 	EndIf
 	what = COV_Config.NameOf(what)
+	; a group word, not a name ("the women", "all men" too); == ignores case in Papyrus
 	string w = what
-	int sex = -1
-	If StringUtil.Find(w, "wom") > -1 || StringUtil.Find(w, "female") > -1 || StringUtil.Find(w, "girl") > -1 || StringUtil.Find(w, "lady") > -1
-		sex = 1
-	ElseIf w == "men" || w == "man" || StringUtil.Find(w, "male") == 0
-		sex = 0
+	If StringUtil.Find(w, "the ") == 0 || StringUtil.Find(w, "all ") == 0 || StringUtil.Find(w, "The ") == 0 || StringUtil.Find(w, "All ") == 0
+		w = StringUtil.Substring(w, 4)
 	EndIf
+	int order = -2
+	If w == "nobody" || w == "no one" || w == "none" || w == "noone" || w == "off" || w == "stop"
+		order = -1
+	ElseIf w == "women" || w == "woman" || w == "girls" || w == "girl" || w == "females" || w == "female" || w == "ladies" || w == "hostile women"
+		order = 1
+	ElseIf w == "men" || w == "man" || w == "males" || w == "male" || w == "hostile men"
+		order = 0
+	ElseIf w == "everyone" || w == "everybody" || w == "all" || w == "enemies" || w == "anyone" || w == "them"
+		order = 2
+	EndIf
+	If order == -1
+		StorageUtil.UnsetIntValue(None, "COV_SpareOrder")
+		int k = UnspareAll()
+		COV_Events.SendState("spare|-")
+		Return "no one is spared any more: companions fight to kill again (" + k + " let go)"
+	EndIf
+	If order >= 0
+		StorageUtil.SetIntValue(None, "COV_SpareOrder", order)
+		COV_Events.SendState("spare|" + OrderName(order))
+		int now = SpareSweep()
+		string r = "from now on, in this fight and the next ones, companions only beat down hostile " + OrderName(order) + " instead of killing them"
+		If now > 0
+			r += " (" + now + " here now)"
+		EndIf
+		Return r
+	EndIf
+	; a name: everyone of that name near the player
 	Actor[] around = MiscUtil.ScanCellNPCs(p, 6000.0)
-	string names = ""
 	int n = 0
 	int i = 0
 	While i < around.Length
 		Actor a = around[i]
-		If a && a != p && !a.IsDead() && !a.IsChild()
-			bool pick = False
-			If sex >= 0
-				pick = a.GetLeveledActorBase().GetSex() == sex && (a.IsHostileToActor(p) || a.IsInCombat())
-			Else
-				pick = a.GetDisplayName() == what
-			EndIf
-			If pick
-				Protect(a)
-				n += 1
-				If n <= 4
-					If names != ""
-						names += ", "
-					EndIf
-					names += a.GetDisplayName()
-				EndIf
-			EndIf
+		If a && a != p && !a.IsDead() && !a.IsChild() && a.GetDisplayName() == what
+			SpareOne(a)
+			n += 1
 		EndIf
 		i += 1
 	EndWhile
 	If n == 0
 		Return "cannot: nobody here matches \"" + what + "\""
 	EndIf
-	Return "spared " + n + " (" + names + "): companions will only beat them down, not kill them"
+	Return "spared " + what + ": companions will only beat them down, not kill them"
+EndFunction
+
+string Function OrderName(int order) Global
+	If order == 0
+		Return "men"
+	ElseIf order == 1
+		Return "women"
+	EndIf
+	Return "enemies"
+EndFunction
+
+Function SpareOne(Actor a) Global
+	Protect(a)
+	StorageUtil.FormListAdd(None, "COV_Spared", a, False)
+EndFunction
+
+; the standing order: every hostile woman / man / enemy near the player who is not spared
+; yet. COV_Events runs it every poll while the player fights. Returns how many it spared.
+int Function SpareSweep() Global
+	If !StorageUtil.HasIntValue(None, "COV_SpareOrder")
+		Return 0
+	EndIf
+	int order = StorageUtil.GetIntValue(None, "COV_SpareOrder")
+	Actor p = Game.GetPlayer()
+	Actor[] around = MiscUtil.ScanCellNPCs(p, 6000.0)
+	int n = 0
+	int i = 0
+	While i < around.Length
+		Actor a = around[i]
+		If a && a != p && !a.IsDead() && !a.IsChild() && !IsThrall(a) && !StorageUtil.FormListHas(None, "COV_Spared", a)
+			Actor foe = a.GetCombatTarget()
+			bool hostile = a.IsHostileToActor(p) || (foe && (foe == p || foe.IsPlayerTeammate()))
+			If hostile && (order == 2 || a.GetLeveledActorBase().GetSex() == order)
+				SpareOne(a)
+				COV_Config.Log("spared " + a.GetDisplayName() + " (standing order: " + OrderName(order) + ")")
+				n += 1
+			EndIf
+		EndIf
+		i += 1
+	EndWhile
+	Return n
+EndFunction
+
+; the order is lifted: the spared who are not thralls can be killed again
+int Function UnspareAll() Global
+	int n = 0
+	int i = StorageUtil.FormListCount(None, "COV_Spared") - 1
+	While i >= 0
+		Actor a = StorageUtil.FormListGet(None, "COV_Spared", i) as Actor
+		If a && !IsThrall(a)
+			Unprotect(a)
+			StorageUtil.UnsetFloatValue(a, "COV_DownReported")
+			n += 1
+		EndIf
+		i -= 1
+	EndWhile
+	StorageUtil.FormListClear(None, "COV_Spared")
+	Return n
+EndFunction
+
+; Spared enemies who lie beaten down: the nearest Vampire Lord (or master) hears it at
+; once, so they can bind them; every 25 seconds again while they are still down. The list
+; drops the dead, the thralls and anyone far away.
+Function CheckDowned() Global
+	int count = StorageUtil.FormListCount(None, "COV_Spared")
+	If count == 0
+		Return
+	EndIf
+	Actor p = Game.GetPlayer()
+	float now = Utility.GetCurrentRealTime()
+	string names = ""
+	Actor first = None
+	int i = count - 1
+	While i >= 0
+		Actor a = StorageUtil.FormListGet(None, "COV_Spared", i) as Actor
+		If !a || a.IsDead() || IsThrall(a)
+			StorageUtil.FormListRemoveAt(None, "COV_Spared", i)
+			If a
+				StorageUtil.UnsetFloatValue(a, "COV_DownReported")
+			EndIf
+		ElseIf a.IsBleedingOut() && a.GetDistance(p) < 6000.0
+			float last = StorageUtil.GetFloatValue(a, "COV_DownReported", -100.0)
+			If last > now || now - last >= 25.0
+				StorageUtil.SetFloatValue(a, "COV_DownReported", now)
+				If names != ""
+					names += ", "
+				EndIf
+				names += a.GetDisplayName()
+				If !first
+					first = a
+				EndIf
+			EndIf
+		EndIf
+		i -= 1
+	EndWhile
+	If names == "" || !COV_Config.B("bEnabled:General")
+		Return
+	EndIf
+	Actor lord = NearestMaster(first)
+	string who = p.GetDisplayName()
+	If lord
+		string text = "(" + names + " - spared on " + who + "'s order - lies beaten down but alive near " + lord.GetDisplayName() + ")"
+		COV_Config.Log("downed: " + names + " -> " + lord.GetDisplayName())
+		AIAgentFunctions.requestMessageForActor(text, "cov_downed", lord.GetDisplayName())
+	ElseIf IsLord(p) && COV_Config.B("bThralls:Thralls")
+		COV_Config.Note(names + " is down and alive: bite with Vampire's Thrall to bind them")
+	Else
+		COV_Config.Log("downed: " + names + " (no Vampire Lord near)")
+	EndIf
+EndFunction
+
+; the Vampire Lord or master nearest to the player (not the player), or None
+Actor Function NearestMaster(Actor near) Global
+	Actor p = Game.GetPlayer()
+	If !near
+		near = p
+	EndIf
+	Actor[] around = MiscUtil.ScanCellNPCs(p, 6000.0)
+	Actor best = None
+	float bestDist = 0.0
+	int i = 0
+	While i < around.Length
+		Actor a = around[i]
+		If a && a != p && !a.IsDead() && !IsThrall(a) && IsLord(a)
+			float d = a.GetDistance(near)
+			If !best || d < bestDist
+				best = a
+				bestDist = d
+			EndIf
+		EndIf
+		i += 1
+	EndWhile
+	Return best
 EndFunction
 
 string Function Bind(Actor target, Actor master) Global

@@ -3,6 +3,7 @@ Scriptname COV_Events extends Quest
  Comment-worthy events (LLM):
    cov_thrall          someone was bound as a thrall, or released (sent by COV_Thralls)
    cov_vampire_turned  a bitten NPC was not cured in time and became a vampire
+   cov_downed          spared enemies lie beaten down (to the nearest Vampire Lord, sent by COV_Thralls)
  Silent bookkeeping (cov_state, never reaches the LLM):
    config|<json>        the MCM settings the server needs
    vampires|A,B         real game vampires near the player (blood thirst by default)
@@ -11,6 +12,7 @@ Scriptname COV_Events extends Quest
    thralls|A=M,B=M      every thrall and their master ("-" for none)
    released|A=M         a thrall set free (remembered for good)
    fed|A                A just drank blood
+   spare|women          the standing order to take enemies alive: women, men, enemies or "-"
  Also brings over what CHIM OStim Bridge 1.x kept in a save before the vampire features
  moved here (bitten, turned and thrall NPCs), once.}
 
@@ -83,6 +85,11 @@ Event OnUpdate()
 			SendVampires()
 			CheckInfected()
 		EndIf
+		; the standing order to take enemies alive reaches the ones who join the fight later
+		If Game.GetPlayer().IsInCombat()
+			COV_Thralls.SpareSweep()
+		EndIf
+		COV_Thralls.CheckDowned()
 	EndIf
 	If polls % 10 == 1
 		COV_Thralls.UpdatePlayerPower()
@@ -271,4 +278,9 @@ Function SendConfig()
 	j += "}"
 	SendState("config|" + j)
 	COV_Thralls.SendThralls() ; the server learns the thralls of this save too
+	If StorageUtil.HasIntValue(None, "COV_SpareOrder")
+		SendState("spare|" + COV_Thralls.OrderName(StorageUtil.GetIntValue(None, "COV_SpareOrder")))
+	Else
+		SendState("spare|-")
+	EndIf
 EndFunction

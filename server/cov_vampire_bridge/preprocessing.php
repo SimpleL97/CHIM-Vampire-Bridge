@@ -5,6 +5,8 @@
  *
  *   funcret     a refused action of this bridge becomes the event cov_refused, which the
  *               agent answers at once (successful ones stay as they are).
+ *   cov_downed  spared enemies lie beaten down: goes on as an instruction to the Vampire
+ *               Lord the game sent it to (CHIM lets only instructions act, not events).
  *   cov_state   silent bookkeeping from COV_Events (config, vampires, lords, court,
  *               thralls, released, fed): stored and answered here, never reaches the
  *               history or the LLM.
@@ -22,6 +24,16 @@ if (isset($gameRequest) && is_array($gameRequest) && strval($gameRequest[0] ?? "
         }
     } catch (Throwable $e) {
         error_log("[cov_vampire_bridge] refusal: " . $e->getMessage());
+    }
+}
+
+// spared enemies lie beaten down: the Vampire Lord who hears it may bind them, as an instruction
+if (isset($gameRequest) && is_array($gameRequest) && strval($gameRequest[0] ?? "") === "cov_downed") {
+    try {
+        $gameRequest[3] = covDownedInstruction(implode("|", array_slice($gameRequest, 3)));
+        $gameRequest[0] = "instruction";
+    } catch (Throwable $e) {
+        error_log("[cov_vampire_bridge] downed: " . $e->getMessage());
     }
 }
 

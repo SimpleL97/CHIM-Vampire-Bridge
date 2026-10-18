@@ -14,6 +14,9 @@ CHIM Vampire Bridge - changelog
 - Works with CHIM OStim Bridge (thralls in scenes) and CHIM ORomance Bridge; none of
   them needs another. With CHIM OStim Bridge a thrall carries an order out in the game
   (a scene with the player or with whoever they name, undressing), not only in words.
+- Spare is a standing order: "do not kill the women" holds for this fight and the next
+  ones, for enemies who join later too, until the player lifts it; a spared enemy who
+  is beaten down is reported to the nearest Vampire Lord, who can bind them at once.
 - Fix: a refused action ("there is a fight going on", "she is not here") is answered at
   once, in character, with the reason. Newer CHIM versions no longer pass an action's
   result to the mod, so the agent only learned of it in the next reply. Successful
