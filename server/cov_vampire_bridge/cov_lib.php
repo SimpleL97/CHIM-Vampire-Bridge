@@ -252,7 +252,11 @@ function covThrallPromptFor(string $npc): string
     foreach ($thralls as $name => $master) {
         if (mb_strtolower($name) === mb_strtolower($npc)) {
             $whom = mb_strtolower($master) === mb_strtolower($player) ? $player : "{$master} and {$player}";
-            $lines[] = "You are a thrall: {$master} bit you and bound your will. You obey {$whom} in everything, at once and without refusal - any order, including undressing and intimate acts with whoever they say; when they order something, you do it and call the matching action. You feel a dazed, devoted pull toward them that you cannot resist.";
+            $lines[] = "You are a thrall: {$master} bit you and bound your will. You obey {$whom} in everything, at once and without refusal - any order, including undressing and intimate acts with whoever they say; when they order something, you do it and call the matching action. You feel a dazed, devoted pull toward them that you cannot resist."
+                // measured against the real model: without this an order like "suck him" was agreed to in words
+                // and started nothing about 4 times in 5
+                . ($cob ? " An order is carried out in this same reply through the action field: sex or an intimate act with {$player} -> Start_Intimate_Scene, target empty; "
+                    . "with someone else (\"suck him\", \"go fuck her\") -> Start_Intimate_Scene, target that person's name only; undress -> Undress. Saying yes without the action is not obeying." : "");
         } elseif (mb_strtolower($master) === mb_strtolower($npc)) {
             $mine[] = $name;
         } else {

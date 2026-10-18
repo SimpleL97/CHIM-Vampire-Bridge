@@ -12,7 +12,8 @@ CHIM Vampire Bridge - changelog
 - Moves over by itself from CHIM OStim Bridge 1.x: bitten, turned and thrall NPCs of
   the save, the vampire state on the CHIM server, the actions and the NPC name lists.
 - Works with CHIM OStim Bridge (thralls in scenes) and CHIM ORomance Bridge; none of
-  them needs another.
+  them needs another. With CHIM OStim Bridge a thrall carries an order out in the game
+  (a scene with the player or with whoever they name, undressing), not only in words.
 - Fix: a refused action ("there is a fight going on", "she is not here") is answered at
   once, in character, with the reason. Newer CHIM versions no longer pass an action's
   result to the mod, so the agent only learned of it in the next reply. Successful
