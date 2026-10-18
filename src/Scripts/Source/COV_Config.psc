@@ -127,6 +127,27 @@ string Function NameOf(string s) global
 	Return Trim(s)
 EndFunction
 
+; the name without any "[...]" after it: CHIM writes NPCs renamed by other mods (Real Names
+; and the like) as "Josajeh Rajida [Bandit Defender]", the game name being "Josajeh Rajida"
+string Function BareName(string s) global
+	s = NameOf(s)
+	int i = StringUtil.Find(s, " [")
+	If i > 0
+		s = StringUtil.Substring(s, 0, i)
+	EndIf
+	i = StringUtil.Find(s, " (") ; "Inguya (dead)"
+	If i > 0
+		s = StringUtil.Substring(s, 0, i)
+	EndIf
+	Return Trim(s)
+EndFunction
+
+; does the actor go by this name (either side may carry a "[...]" or a RefID)
+bool Function NameIs(Actor a, string name) global
+	string d = a.GetDisplayName()
+	Return d == name || BareName(d) == BareName(name)
+EndFunction
+
 Actor Function RefActor(string s) global
 	int i = StringUtil.Find(s, "RefID")
 	If i < 0

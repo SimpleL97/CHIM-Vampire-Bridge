@@ -30,7 +30,7 @@ $GLOBALS["COV_ACTIONS"] = [
     "ExtCmdCOV_Enthrall" => [
         "name" => "Enthrall",
         "return" => "#HERIKA_NAME# bites someone and binds their will.",
-        "params" => ["target" => "Exact name of the one to enthrall (who is here)."],
+        "params" => ["target" => "Exact name of the one to enthrall (who is here), several names separated by commas, or \"women\" / \"men\" / \"everyone\" for all the dead (and the beaten-down captives) of that kind around."],
         "description" => "ONLY if you are a Vampire Lord, or the THRALLS notes say you can enthrall: bite someone who is here and bind their will - they become your thrall and #PLAYER_NAME#'s, and obey you both in everything. Works on mortals and on ordinary vampires, never on a Vampire Lord or Volkihar noble. "
             . "When #PLAYER_NAME# asks you to make someone your (or their) thrall, or when your own character would do it and #PLAYER_NAME# agrees. Enemies too, even in the middle of a fight: the bite ends their hostility. A Vampire Lord can also raise a dead person this way: Enthrall on the body brings them back to life as a thrall. Call the action instead of only describing it.",
     ],

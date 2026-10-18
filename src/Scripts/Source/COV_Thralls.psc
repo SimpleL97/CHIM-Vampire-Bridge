@@ -302,7 +302,7 @@ string Function GroupWord(string s) Global
 			guard = 4
 		Else
 			string head = StringUtil.Substring(s, 0, sp)
-			If head == "the" || head == "all" || head == "hostile" || head == "every" || head == "enemy"
+			If head == "the" || head == "all" || head == "hostile" || head == "every" || head == "enemy" || head == "dead"
 				s = COV_Config.Trim(StringUtil.Substring(s, sp + 1))
 				guard += 1
 			Else
@@ -334,7 +334,7 @@ int Function GroupOrder(string w) Global
 		Return 1
 	ElseIf w == "men" || w == "man" || w == "males" || w == "male"
 		Return 0
-	ElseIf w == "everyone" || w == "everybody" || w == "all" || w == "enemies" || w == "anyone" || w == "them"
+	ElseIf w == "everyone" || w == "everybody" || w == "all" || w == "enemies" || w == "anyone" || w == "them" || w == "dead" || w == "bodies"
 		Return 2
 	EndIf
 	Return -2
@@ -419,9 +419,9 @@ int Function UnspareAll() Global
 	StorageUtil.FormListClear(None, "COV_Spared")
 	i = StorageUtil.FormListCount(None, "COV_SpareMissedList") - 1
 	While i >= 0
-		Actor a = StorageUtil.FormListGet(None, "COV_SpareMissedList", i) as Actor
-		If a
-			StorageUtil.UnsetIntValue(a, "COV_SpareMissed")
+		Actor m = StorageUtil.FormListGet(None, "COV_SpareMissedList", i) as Actor
+		If m
+			StorageUtil.UnsetIntValue(m, "COV_SpareMissed")
 		EndIf
 		i -= 1
 	EndWhile

@@ -295,7 +295,7 @@ function covThrallPromptFor(string $npc): string
     }
     if ($lord) {
         $lines[] = "As a Vampire Lord you can bind anyone who is not a Vampire Lord with a bite: Enthrall (when {$player} asks for it or agrees) - enemies too, even mid-fight; to take an enemy alive first, use Spare. Release_Thrall sets a thrall free."
-            . (!empty($cfg["raise_dead"]) ? " You can even raise the dead: Enthrall on a dead person's body brings them back to life, whole, as your thrall." : "");
+            . (!empty($cfg["raise_dead"]) ? " You can even raise the dead: Enthrall on a dead person's body brings them back to life, whole, as your thrall - target their name, several names, or \"women\" / \"men\" / \"everyone\" for all the dead of that kind around." : "");
     } elseif ($canBind) {
         $lines[] = "Your blood is old and strong enough: you can bind anyone who is not of the ancient blood with a bite: Enthrall (when {$player} asks for it or agrees) - enemies too, even mid-fight; to take an enemy alive first, use Spare. Release_Thrall sets a thrall free.";
     }

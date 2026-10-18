@@ -257,25 +257,93 @@ Function ThrallAction(String command, String parameter)
 		Report(command, parameter, "cannot: say who - the target must be named")
 		Return
 	EndIf
-	Actor target = ResolvePartnerName(name, command == "ExtCmdCOV_Enthrall")
-	If !target || target == Game.GetPlayer()
+	; one name, several ("A, B"), or for Enthrall a group: "women", "the dead", "everyone"
+	Actor[] targets = TargetsOf(name, command == "ExtCmdCOV_Enthrall")
+	If !targets[0]
 		Report(command, parameter, "cannot: " + name + " is not here")
 		Return
 	EndIf
-	If command == "ExtCmdCOV_Release"
-		If !COV_Thralls.IsThrall(target)
-			Report(command, parameter, "nothing to do: " + target.GetDisplayName() + " is nobody's thrall")
-			Return
+	If command == "ExtCmdCOV_Enthrall"
+		WaitUntilSilent(npc)
+	EndIf
+	String done = ""
+	String failed = ""
+	Int i = 0
+	While i < targets.Length && targets[i]
+		Actor target = targets[i]
+		String r
+		If command == "ExtCmdCOV_Release"
+			If COV_Thralls.IsThrall(target)
+				r = COV_Thralls.Release(target)
+			Else
+				r = "nothing to do: " + target.GetDisplayName() + " is nobody's thrall"
+			EndIf
+		ElseIf npc.GetDistance(target) > RangeUnits()
+			r = "cannot: " + target.GetDisplayName() + " is too far away"
+		Else
+			r = COV_Thralls.Bite(npc, target)
 		EndIf
-		Report(command, parameter, COV_Thralls.Release(target))
-		Return
+		If StringUtil.Find(r, "cannot") == 0 || StringUtil.Find(r, "nothing to do") == 0
+			failed = Join(failed, r)
+		Else
+			done = Join(done, r)
+		EndIf
+		i += 1
+	EndWhile
+	; a refusal only when nothing at all happened (the server answers those at once)
+	If done == ""
+		Report(command, parameter, failed)
+	ElseIf failed != ""
+		Report(command, parameter, done + " (not all: " + failed + ")")
+	Else
+		Report(command, parameter, done)
 	EndIf
-	If npc.GetDistance(target) > RangeUnits()
-		Report(command, parameter, "cannot: " + target.GetDisplayName() + " is too far away")
-		Return
+EndFunction
+
+String Function Join(String list, String item)
+	If list == ""
+		Return item
 	EndIf
-	WaitUntilSilent(npc)
-	Report(command, parameter, COV_Thralls.Bite(npc, target))
+	Return list + "; " + item
+EndFunction
+
+; Who a thrall action is about, at most 8: the names in a "A, B" list, or - for Enthrall - a
+; group word ("women", "the dead women", "everyone"): the dead who can be raised and the
+; captives lying beaten down, of that kind, near the player.
+Actor[] Function TargetsOf(String s, Bool enthrall)
+	Actor[] out = new Actor[8]
+	Actor player = Game.GetPlayer()
+	Int n = 0
+	Int group = -2
+	If enthrall
+		group = COV_Thralls.GroupOrder(COV_Thralls.GroupWord(COV_Config.BareName(s)))
+	EndIf
+	If group >= 0
+		Actor[] around = MiscUtil.ScanCellNPCs(player, RangeUnits(), None, False)
+		Int i = 0
+		While i < around.Length && n < out.Length
+			Actor a = around[i]
+			If a && a != player && !COV_Thralls.IsThrall(a) && (group == 2 || a.GetLeveledActorBase().GetSex() == group)
+				If (a.IsDead() && COV_Thralls.CanRaise(a)) || (!a.IsDead() && a.IsBleedingOut() && StorageUtil.FormListHas(None, "COV_Spared", a))
+					out[n] = a
+					n += 1
+				EndIf
+			EndIf
+			i += 1
+		EndWhile
+		Return out
+	EndIf
+	String[] parts = StringUtil.Split(s, ",")
+	Int j = 0
+	While j < parts.Length && n < out.Length
+		Actor b = ResolvePartnerName(COV_Config.Trim(parts[j]), enthrall)
+		If b && b != player && out.Find(b) < 0
+			out[n] = b
+			n += 1
+		EndIf
+		j += 1
+	EndWhile
+	Return out
 EndFunction
 
 ; ---------------------------------------------------------------- the bite
@@ -386,13 +454,16 @@ Actor Function ResolvePartnerName(String name, bool allowDead = False)
 		Return player
 	EndIf
 	Actor a = AIAgentFunctions.getAgentByName(name)
+	If !a && COV_Config.BareName(name) != name
+		a = AIAgentFunctions.getAgentByName(COV_Config.BareName(name))
+	EndIf
 	If a
 		Return a
 	EndIf
 	Actor[] around = MiscUtil.ScanCellNPCs(player, RangeUnits())
 	Int i = 0
 	While i < around.Length
-		If around[i] && !around[i].IsDead() && around[i].GetDisplayName() == name
+		If around[i] && !around[i].IsDead() && COV_Config.NameIs(around[i], name)
 			Return around[i]
 		EndIf
 		i += 1
@@ -402,7 +473,7 @@ Actor Function ResolvePartnerName(String name, bool allowDead = False)
 		around = MiscUtil.ScanCellNPCs(player, RangeUnits(), None, False)
 		i = 0
 		While i < around.Length
-			If around[i] && around[i].IsDead() && around[i].GetDisplayName() == name && (!best || around[i].GetDistance(player) < best.GetDistance(player))
+			If around[i] && around[i].IsDead() && COV_Config.NameIs(around[i], name) && (!best || around[i].GetDistance(player) < best.GetDistance(player))
 				best = around[i]
 			EndIf
 			i += 1
