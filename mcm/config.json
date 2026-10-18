@@ -203,6 +203,32 @@
                     "valueOptions": {
                         "sourceType": "ModSettingBool"
                     }
+                },
+                {
+                    "text": "$COV_hCaptives",
+                    "type": "header"
+                },
+                {
+                    "id": "iSpareFail:Thralls",
+                    "text": "$COV_SpareFail",
+                    "type": "slider",
+                    "help": "$COV_SpareFailH",
+                    "valueOptions": {
+                        "min": 0,
+                        "max": 100,
+                        "step": 5,
+                        "formatString": "{0}%",
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "id": "bRaiseDead:Thralls",
+                    "text": "$COV_RaiseDead",
+                    "type": "toggle",
+                    "help": "$COV_RaiseDeadH",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
                 }
             ]
         }

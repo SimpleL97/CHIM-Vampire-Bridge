@@ -48,7 +48,7 @@ function covConfig(): array
     if ($cfg === null) {
         $defaults = [
             "enabled" => 1, "log" => 1, "vampires" => "", "blood_hours" => 24, "vampire_lords" => "",
-            "lord_gift" => 1, "thralls" => 1, "thrall_court" => 1, "thrall_masters" => "",
+            "lord_gift" => 1, "thralls" => 1, "thrall_court" => 1, "thrall_masters" => "", "raise_dead" => 1,
         ];
         $cfg = array_merge($defaults, covOptGet(COV_CONFIG_KEY) ?? []);
     }
@@ -177,13 +177,15 @@ function covApplyGameState(string $data, float $now): void
         }
     } elseif (preg_match('/fed\|([^()\r\n]+)/u', $data, $m)) {
         $state["last_blood"][trim($m[1])] = $now;
-    } elseif (preg_match('/spare\|([^()\r\n]+)/u', $data, $m)) {
-        // the standing order to take enemies alive: women, men, enemies, or "-" for none
+    } elseif (preg_match('/spare\|([^()|\r\n]+)(\|thralls)?/u', $data, $m)) {
+        // the standing order to take enemies alive: women, men, enemies, or "-" for none;
+        // "|thralls" when the player wants them made thralls too
         $order = trim($m[1]);
         if (in_array($order, ["women", "men", "enemies"], true)) {
             $state["spare"] = $order;
+            $state["spare_thralls"] = !empty($m[2]) ? 1 : 0;
         } else {
-            unset($state["spare"]);
+            unset($state["spare"], $state["spare_thralls"]);
         }
     } else {
         return;
@@ -292,7 +294,8 @@ function covThrallPromptFor(string $npc): string
         $lines[] = "You were once the thrall of {$former}: their bite bound your will, and you remember everything you did and were made to do in that time. How you feel about it - and about {$former} and {$player} - now follows your own character.";
     }
     if ($lord) {
-        $lines[] = "As a Vampire Lord you can bind anyone who is not a Vampire Lord with a bite: Enthrall (when {$player} asks for it or agrees) - enemies too, even mid-fight; to take an enemy alive first, use Spare. Release_Thrall sets a thrall free.";
+        $lines[] = "As a Vampire Lord you can bind anyone who is not a Vampire Lord with a bite: Enthrall (when {$player} asks for it or agrees) - enemies too, even mid-fight; to take an enemy alive first, use Spare. Release_Thrall sets a thrall free."
+            . (!empty($cfg["raise_dead"]) ? " You can even raise the dead: Enthrall on a dead person's body brings them back to life, whole, as your thrall." : "");
     } elseif ($canBind) {
         $lines[] = "Your blood is old and strong enough: you can bind anyone who is not of the ancient blood with a bite: Enthrall (when {$player} asks for it or agrees) - enemies too, even mid-fight; to take an enemy alive first, use Spare. Release_Thrall sets a thrall free.";
     }
@@ -366,8 +369,10 @@ function covThrallActionRule(string $npc): string
     // the order itself is asked for in the player's turn (covSpareCue); here what is in force
     $order = strval($state["spare"] ?? "");
     if ($order !== "") {
+        $asThralls = !empty($state["spare_thralls"]);
         $out[] = "TAKING ENEMIES ALIVE - {$player}'s order, in force: hostile {$order} are only beaten down in a fight, never killed"
-            . ($canBind ? "; the ones lying beaten down you bind with Enthrall when {$player} wants them as thralls" : "")
+            . ($asThralls ? ", to be made thralls" : "")
+            . ($canBind ? ($asThralls ? "; every one of them lying beaten down you bind with Enthrall, one after another" : "; the ones lying beaten down you bind with Enthrall when {$player} wants them as thralls") : "")
             . ". When {$player} wants them killed again: Spare, target \"nobody\".";
     }
     if (($canBind || $mine) && !$isThrall) {
@@ -385,7 +390,7 @@ function covThrallActionRule(string $npc): string
  * Added to the instruction of the player's turn (inputtext): "do not kill the women" was
  * answered in words by every companion and nobody called Spare - placed among the rules at
  * the end of the prompt it changed nothing (0 of 39 against the real model), here it is
- * called about 3 times in 4. "" when the bridge is off.
+ * called about 3 times in 5. "" when the bridge is off.
  */
 function covSpareCue(): string
 {
@@ -395,7 +400,7 @@ function covSpareCue(): string
     }
     $player = strval($GLOBALS["PLAYER_NAME"] ?? "the player");
     return "(If {$player}'s last line, in any language, tells you or the companions not to kill some enemies - \"don't kill the women\", \"leave the girls alive\", \"take them alive\" - "
-        . "this reply's action is Spare with target \"women\", \"men\", \"everyone\" or a name; nobody has to be here now, the order holds for the next fights too. "
+        . "this reply's action is Spare with target \"women\", \"men\", \"everyone\" or a name, plus \", thralls\" if {$player} wants them made thralls; nobody has to be here now, the order holds for the next fights too. "
         . "If {$player} wants them killed again: Spare, target \"nobody\".)";
 }
 
@@ -411,6 +416,10 @@ function covDownedInstruction(string $data): string
     $player = strval($GLOBALS["PLAYER_NAME"] ?? "the player");
     $what = trim($data, " ()");
     covLog("downed: {$what} -> {$herika}");
+    if (!empty(covState()["spare_thralls"])) {
+        // the player ordered them made thralls: no "if"
+        return "The Narrator: {$what}. {$player} ordered them made thralls: {$herika} binds the first of them right now - action Enthrall, target that name; the others come next.";
+    }
     return "The Narrator: {$what}. If {$player} wants enemies like these as thralls (look at what {$player} said), {$herika} binds the first of them right now: action Enthrall, target that name - the others come next. "
         . "Otherwise {$herika} says one short line about them and does nothing.";
 }

@@ -257,7 +257,7 @@ Function ThrallAction(String command, String parameter)
 		Report(command, parameter, "cannot: say who - the target must be named")
 		Return
 	EndIf
-	Actor target = ResolvePartnerName(name)
+	Actor target = ResolvePartnerName(name, command == "ExtCmdCOV_Enthrall")
 	If !target || target == Game.GetPlayer()
 		Report(command, parameter, "cannot: " + name + " is not here")
 		Return
@@ -374,9 +374,10 @@ EndFunction
 
 ; the player, an AI agent, or anyone around by exact name: whom a vampire bites is often
 ; not an AI agent (a thrall to be, a bandit, a villager)
-Actor Function ResolvePartnerName(String name)
+; allowDead: a dead body too (a Vampire Lord raises the dead as thralls), after the living
+Actor Function ResolvePartnerName(String name, bool allowDead = False)
 	Actor byRef = COV_Config.RefActor(name)
-	If byRef && !byRef.IsDead()
+	If byRef && (!byRef.IsDead() || allowDead)
 		Return byRef
 	EndIf
 	name = COV_Config.NameOf(name)
@@ -396,6 +397,20 @@ Actor Function ResolvePartnerName(String name)
 		EndIf
 		i += 1
 	EndWhile
+	If allowDead
+		Actor best = None
+		around = MiscUtil.ScanCellNPCs(player, RangeUnits(), None, False)
+		i = 0
+		While i < around.Length
+			If around[i] && around[i].IsDead() && around[i].GetDisplayName() == name && (!best || around[i].GetDistance(player) < best.GetDistance(player))
+				best = around[i]
+			EndIf
+			i += 1
+		EndWhile
+		If best
+			Return best
+		EndIf
+	EndIf
 	; a name was given but nobody by that name is here: refuse rather than biting the player
 	Return None
 EndFunction

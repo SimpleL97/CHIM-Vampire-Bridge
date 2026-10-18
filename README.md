@@ -40,7 +40,8 @@ release (FOMOD archive) instead of building it.
 - **Thralls**: Vampire Lords (Dawnguard's own and the names in the MCM), the Volkihar
   court and the names in the MCM bind thralls; the player gets the lesser power
   "Vampire's Thrall" (shout key) once they are a Vampire Lord. Thralls obey, released
-  thralls remember.
+  thralls remember. Vampire Lords (the player too) raise the dead as thralls, alive and
+  whole; "turn the women into thralls" has them bind every spared enemy who is down.
 - **Notifications and a log file** in the game and on the CHIM server.
 - **MCM** through MCM Helper, translated into 12 languages with English fallback.
 

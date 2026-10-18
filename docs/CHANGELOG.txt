@@ -17,6 +17,10 @@ CHIM Vampire Bridge - changelog
 - Spare is a standing order: "do not kill the women" holds for this fight and the next
   ones, for enemies who join later too, until the player lifts it; a spared enemy who
   is beaten down is reported to the nearest Vampire Lord, who can bind them at once.
+  "Turn the women into thralls": the Vampire Lord binds every one of them who is down.
+  MCM: a chance that the order does not hold for an enemy (10% by default).
+- Vampire Lords raise the dead: Enthrall (or the player's Vampire's Thrall) on a dead
+  person's body brings them back to life, whole, as a thrall (MCM, on by default).
 - Fix: a refused action ("there is a fight going on", "she is not here") is answered at
   once, in character, with the reason. Newer CHIM versions no longer pass an action's
   result to the mod, so the agent only learned of it in the next reply. Successful

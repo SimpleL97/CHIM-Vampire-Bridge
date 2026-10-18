@@ -12,7 +12,8 @@ Scriptname COV_Events extends Quest
    thralls|A=M,B=M      every thrall and their master ("-" for none)
    released|A=M         a thrall set free (remembered for good)
    fed|A                A just drank blood
-   spare|women          the standing order to take enemies alive: women, men, enemies or "-"
+   spare|women          the standing order to take enemies alive: women, men, enemies or "-",
+                        "spare|women|thralls" when the player wants them made thralls
  Also brings over what CHIM OStim Bridge 1.x kept in a save before the vampire features
  moved here (bitten, turned and thrall NPCs), once.}
 
@@ -86,15 +87,20 @@ Event OnUpdate()
 			CheckInfected()
 		EndIf
 		; the standing order to take enemies alive reaches the ones who join the fight later
-		If Game.GetPlayer().IsInCombat()
-			COV_Thralls.SpareSweep()
+		If Game.GetPlayer().IsInCombat() && StorageUtil.HasIntValue(None, "COV_SpareOrder")
+			COV_Thralls.SpareSweep(MiscUtil.ScanCellNPCs(Game.GetPlayer(), 6000.0))
 		EndIf
 		COV_Thralls.CheckDowned()
 	EndIf
 	If polls % 10 == 1
 		COV_Thralls.UpdatePlayerPower()
 	EndIf
-	RegisterForSingleUpdate(PollSeconds)
+	; every second while the player fights under the order: the first blows decide who lives
+	If Game.GetPlayer().IsInCombat() && StorageUtil.HasIntValue(None, "COV_SpareOrder")
+		RegisterForSingleUpdate(1.0)
+	Else
+		RegisterForSingleUpdate(PollSeconds)
+	EndIf
 EndEvent
 
 ; Real game vampires near the player (Vampire keyword, or turned by an untreated bite),
@@ -275,12 +281,9 @@ Function SendConfig()
 	j += ",\"thralls\":" + COV_Config.Bit(COV_Config.B("bThralls:Thralls"))
 	j += ",\"thrall_court\":" + COV_Config.Bit(COV_Config.B("bThrallCourt:Thralls"))
 	j += ",\"thrall_masters\":\"" + COV_Config.Clean(COV_Config.S("sThrallMasters:Thralls")) + "\""
+	j += ",\"raise_dead\":" + COV_Config.Bit(COV_Config.B("bRaiseDead:Thralls"))
 	j += "}"
 	SendState("config|" + j)
 	COV_Thralls.SendThralls() ; the server learns the thralls of this save too
-	If StorageUtil.HasIntValue(None, "COV_SpareOrder")
-		SendState("spare|" + COV_Thralls.OrderName(StorageUtil.GetIntValue(None, "COV_SpareOrder")))
-	Else
-		SendState("spare|-")
-	EndIf
+	COV_Thralls.SendOrder()
 EndFunction
