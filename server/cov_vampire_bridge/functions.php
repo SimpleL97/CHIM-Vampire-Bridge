@@ -45,7 +45,8 @@ $GLOBALS["COV_ACTIONS"] = [
         "name" => "Release_Thrall",
         "return" => "#HERIKA_NAME# releases a thrall.",
         "params" => ["target" => "Exact name of the thrall to set free."],
-        "description" => "Set a thrall free: their will is their own again. When #PLAYER_NAME# asks you to release them, or you as their master decide to.",
+        "description" => "Set a thrall free: their will is their own again. When #PLAYER_NAME# asks you to release them, or you as their master decide to. "
+            . "Telling the thrall \"you are free\" does nothing in the game - only this action frees them, so call it in the reply where you let them go, with their name in target.",
     ],
 ];
 

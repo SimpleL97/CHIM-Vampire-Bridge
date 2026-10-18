@@ -265,10 +265,10 @@ function covThrallPromptFor(string $npc): string
     if ($others) {
         $lines[] = "Thralls whose will a Vampire Lord has bound: " . implode(", ", $others) . ". They obey {$player} in everything and never refuse an order.";
     }
-    if (($mine || $others) && $cob) {
-        $lines[] = "A thrall cannot act on its own - your words alone do not move it. When you or {$player} order a thrall to undress, dress or do anything intimate, YOU carry the order out in this same reply: "
-            . "Undress / Get_Dressed with the thrall's name in target, or Start_Intimate_Scene. In its target name everyone who takes part: a thrall serving {$player} -> \"{$player}, <thrall's name>\"; add your own name only if you join too. "
-            . "With only the thrall's name the scene is between you and the thrall. Saying \"do it\" to the thrall without the action starts nothing.";
+    // not for a thrall: read by one, "a thrall cannot act" kept it from acting at all
+    if (($mine || $others) && $cob && !isset($thralls[$npc])) {
+        $lines[] = "When you or {$player} order a thrall to undress, dress or do something intimate, you carry the order out yourself in this same reply: Undress / Get_Dressed with the thrall's name in target, "
+            . "or Start_Intimate_Scene with everyone who takes part in target - a thrall serving {$player} -> \"{$player}, <thrall's name>\", your own name only if you join too.";
     }
     $former = null;
     foreach (($state["former_thralls"] ?? []) as $name => $master) {
@@ -322,4 +322,40 @@ function covRefusalEvent(string $data): ?string
     $agent = trim(explode("~", $parts[2])[0]);
     covLog("refused {$parts[1]} by {$agent}: {$result}");
     return "({$agent} tried " . COV_ACTION_NAMES[$parts[1]] . ", but it did not happen - {$result})";
+}
+
+/**
+ * Placed at the very end of the prompt, after CHIM OStim Bridge's own action rule: the
+ * thrall notes alone are too far up - agents said "she is free" or "do it" and set no
+ * action. Only for those who bind, free or command thralls (never for a thrall).
+ */
+function covThrallActionRule(string $npc): string
+{
+    $cfg = covConfig();
+    if (empty($cfg["enabled"]) || empty($cfg["thralls"]) || $npc === "" || $npc === "The Narrator") {
+        return "";
+    }
+    $state = covState();
+    $thralls = $state["thralls"] ?? [];
+    foreach ($thralls as $name => $master) {
+        if (mb_strtolower($name) === mb_strtolower($npc)) {
+            return "";
+        }
+    }
+    $lord = covIsLord($state, $npc);
+    $canBind = $lord || (!empty($cfg["thrall_court"]) && !empty($state["game_court"][mb_strtolower($npc)])) || covListed("thrall_masters", $npc);
+    $mine = false;
+    foreach ($thralls as $name => $master) {
+        $mine = $mine || mb_strtolower($master) === mb_strtolower($npc);
+    }
+    if (!$canBind && !$mine) {
+        return "";
+    }
+    $player = strval($GLOBALS["PLAYER_NAME"] ?? "the player");
+    $rule = "THRALLS IN THE GAME: words alone change nothing. In the same reply where you say it: set a thrall free -> action Release_Thrall, target their name; "
+        . "bind someone -> Enthrall, target their name";
+    if (covPeer("cob_ostim_bridge") !== null) {
+        $rule .= "; order a thrall to undress -> Undress, target their name; order a thrall into sex with {$player} -> Start_Intimate_Scene, target \"{$player}, <thrall's name>\"";
+    }
+    return $rule . ".";
 }

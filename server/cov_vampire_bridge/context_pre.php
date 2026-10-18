@@ -25,4 +25,11 @@ if (function_exists('chimRegisterPromptInjection')) {
             return "";
         }
     }, 820);
+    chimRegisterPromptInjection("prompt_bottom", "cov_thrall_rule", function ($slot, $context) {
+        try {
+            return covThrallActionRule(trim(strval($GLOBALS["HERIKA_NAME"] ?? "")));
+        } catch (Throwable $e) {
+            return "";
+        }
+    }, 860);
 }
