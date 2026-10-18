@@ -266,7 +266,8 @@ function covThrallPromptFor(string $npc): string
         $lines[] = "Thralls whose will a Vampire Lord has bound: " . implode(", ", $others) . ". They obey {$player} in everything and never refuse an order.";
     }
     if (($mine || $others) && $cob) {
-        $lines[] = "A thrall who does not talk to you still obeys: when {$player} orders it, undress or dress a thrall with Undress / Get_Dressed (their name in target) and bring them into a scene with Start_Intimate_Scene (their name among the partners).";
+        $lines[] = "A thrall who does not talk to you still obeys: when {$player} orders it, undress or dress a thrall with Undress / Get_Dressed (their name in target) and bring them into a scene with Start_Intimate_Scene. "
+            . "In its target name everyone who takes part: a thrall serving {$player} -> \"{$player}, <thrall's name>\"; add your own name only if you join too. With only the thrall's name the scene is between you and the thrall.";
     }
     $former = null;
     foreach (($state["former_thralls"] ?? []) as $name => $master) {
