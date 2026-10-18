@@ -92,6 +92,7 @@ string Function Bite(Actor master, Actor target) Global
 		Calm(target)
 		master.StopCombat()
 	EndIf
+	Rouse(target)
 	COV_Bridge bridge = Game.GetFormFromFile(0x000800, "CHIMVampireBridge.esp") as COV_Bridge
 	If bridge
 		bridge.BringTogether(master, target)
@@ -99,6 +100,66 @@ string Function Bite(Actor master, Actor target) Global
 	EndIf
 	Return Bind(target, master)
 EndFunction
+
+; ---------------------------------------------------------------- the mod Surrender
+; "Surrender - Enemies Yield and Comply with Your Demands" (DB Surrender.esp, optional): an
+; enemy at 15% health, hit by anyone, kneels for 3 minutes - in bleedout, with the spell
+; DBSurrenderMarker, essential for the time being and kept at 0 health.
+
+Spell Function SurrenderMarker() Global
+	If !Game.IsPluginInstalled("DB Surrender.esp")
+		Return None
+	EndIf
+	Return Game.GetFormFromFile(0x000807, "DB Surrender.esp") as Spell ; DBSurrenderMarker
+EndFunction
+
+; Enemies kneeling in Surrender join the captives (COV_Spared), so the nearest Vampire Lord
+; hears of them too. Only kept alive by the standing order if it covers them (SpareSweep).
+Function CollectKneeling() Global
+	Spell marker = SurrenderMarker()
+	If !marker || !COV_Config.B("bThralls:Thralls")
+		Return
+	EndIf
+	Actor p = Game.GetPlayer()
+	Actor[] around = MiscUtil.ScanCellNPCs(p, 6000.0)
+	int i = 0
+	While i < around.Length
+		Actor a = around[i]
+		If a && a != p && !a.IsDead() && !IsThrall(a) && a.HasSpell(marker) && !StorageUtil.FormListHas(None, "COV_Spared", a)
+			StorageUtil.SetIntValue(a, "COV_Kneeling", 1)
+			StorageUtil.FormListAdd(None, "COV_Spared", a, False)
+			COV_Config.Log(a.GetDisplayName() + " kneels in surrender")
+		EndIf
+		i += 1
+	EndWhile
+EndFunction
+
+; On their feet for the bite (a paired animation does not start in bleedout): out of
+; Surrender's hold first - it would keep them at 0 health - then full health.
+Function Rouse(Actor target) Global
+	Spell marker = SurrenderMarker()
+	If marker && target.HasSpell(marker)
+		target.RemoveSpell(marker)
+		ActorBase b = target.GetActorBase()
+		If b && b.IsEssential() && !b.IsUnique()
+			b.SetEssential(False) ; what Surrender itself does when it lets go
+		EndIf
+		Protect(target)
+	EndIf
+	StorageUtil.UnsetIntValue(target, "COV_Kneeling")
+	If target.IsBleedingOut()
+		target.SetActorValue("Aggression", 0.0)
+		target.SetNoBleedoutRecovery(False)
+		target.RestoreActorValue("Health", 10000.0)
+		float t = 0.0
+		While t < 5.0 && target.IsBleedingOut()
+			Utility.Wait(0.25)
+			t += 0.25
+		EndWhile
+	EndIf
+EndFunction
+
+; ---------------------------------------------------------------- raising the dead
 
 ; the dead a Vampire Lord can raise as a thrall (MCM): people, not creatures or children
 bool Function CanRaise(Actor target) Global
@@ -151,7 +212,9 @@ EndFunction
 ; them down (bleedout). For enemies the player wants to enthrall later.
 bool Function Protect(Actor a) Global
 	ActorBase b = a.GetLeveledActorBase()
-	If !b || b.IsProtected() || b.IsEssential()
+	; an essential bandit is one kneeling in the mod Surrender: essential only for now, and
+	; Surrender takes it away again at the first blow - so protected too
+	If !b || b.IsProtected() || (b.IsEssential() && b.IsUnique())
 		Return False
 	EndIf
 	b.SetProtected(True)
@@ -376,6 +439,9 @@ Function CheckDowned() Global
 	EndIf
 	Actor p = Game.GetPlayer()
 	float now = Utility.GetCurrentRealTime()
+	; to be made thralls: reminded every 25 seconds; otherwise the Vampire Lord hears of
+	; each one once, and the player decides
+	bool again = StorageUtil.GetIntValue(None, "COV_SpareThralls") == 1
 	string names = ""
 	Actor first = None
 	int i = count - 1
@@ -385,10 +451,11 @@ Function CheckDowned() Global
 			StorageUtil.FormListRemoveAt(None, "COV_Spared", i)
 			If a
 				StorageUtil.UnsetFloatValue(a, "COV_DownReported")
+				StorageUtil.UnsetIntValue(a, "COV_Kneeling")
 			EndIf
 		ElseIf a.IsBleedingOut() && a.GetDistance(p) < 6000.0
 			float last = StorageUtil.GetFloatValue(a, "COV_DownReported", -100.0)
-			If last > now || now - last >= 25.0
+			If last == -100.0 || (again && (last > now || now - last >= 25.0))
 				StorageUtil.SetFloatValue(a, "COV_DownReported", now)
 				If names != ""
 					names += ", "
@@ -406,12 +473,15 @@ Function CheckDowned() Global
 	EndIf
 	Actor lord = NearestMaster(first)
 	string who = p.GetDisplayName()
-	string why = "spared on " + who + "'s order"
-	If StorageUtil.GetIntValue(None, "COV_SpareThralls") == 1
-		why += " to be made thralls"
+	string why = "beaten in the fight"
+	If StorageUtil.HasIntValue(None, "COV_SpareOrder")
+		why = "spared on " + who + "'s order"
+		If again
+			why += " to be made thralls"
+		EndIf
 	EndIf
 	If lord && COV_Config.B("bThralls:Thralls")
-		string text = "(" + names + " - " + why + " - lies beaten down but alive near " + lord.GetDisplayName() + ")"
+		string text = "(" + names + " - " + why + " - lies beaten down or kneels in surrender, alive, near " + lord.GetDisplayName() + ")"
 		COV_Config.Log("downed: " + names + " -> " + lord.GetDisplayName())
 		AIAgentFunctions.requestMessageForActor(text, "cov_downed", lord.GetDisplayName())
 	ElseIf IsLord(p) && COV_Config.B("bThralls:Thralls")

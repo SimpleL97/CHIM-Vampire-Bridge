@@ -35,6 +35,14 @@ event log, so every AI agent nearby can talk about what happened in another one.
 
 - **OStim Standalone** - not needed; when it is installed, nobody is bitten or enthralled in
   the middle of a scene.
+- **Surrender - Enemies Yield and Comply with Your Demands**
+  ([Nexus 139522](https://www.nexusmods.com/skyrimspecialedition/mods/139522)) - enemies kneel
+  and give up at low health. With it, an enemy kneeling in surrender (its spell
+  `DBSurrenderMarker`, 0x000807 in `DB Surrender.esp`) counts as a captive here: the nearest
+  Vampire Lord hears of them and can bind them; a spared one stays protected while kneeling
+  (Surrender makes them essential only for the time being); a bite first frees them from
+  Surrender's hold so the feeding animation can play. Found by the plugin name; nothing of
+  it is needed to build or to play.
 
 ## To build
 

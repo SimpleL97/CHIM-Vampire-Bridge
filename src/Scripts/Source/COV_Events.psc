@@ -90,6 +90,9 @@ Event OnUpdate()
 		If Game.GetPlayer().IsInCombat() && StorageUtil.HasIntValue(None, "COV_SpareOrder")
 			COV_Thralls.SpareSweep(MiscUtil.ScanCellNPCs(Game.GetPlayer(), 6000.0))
 		EndIf
+		If polls % 3 == 0 || Game.GetPlayer().IsInCombat()
+			COV_Thralls.CollectKneeling() ; enemies kneeling in the mod Surrender
+		EndIf
 		COV_Thralls.CheckDowned()
 	EndIf
 	If polls % 10 == 1

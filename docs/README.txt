@@ -18,6 +18,8 @@ REQUIREMENTS
 - PapyrusUtil SE/AE (Nexus 13048)
 - SkyUI (Nexus 12604) and MCM Helper (Nexus 53000)
 OStim Standalone is not needed.
+Optional: "Surrender - Enemies Yield and Comply with Your Demands" (Nexus 139522) -
+enemies kneeling in surrender become captives a Vampire Lord can bind.
 
 
 INSTALLATION
