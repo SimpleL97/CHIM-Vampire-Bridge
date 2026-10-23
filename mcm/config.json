@@ -148,6 +148,28 @@
                     "valueOptions": {
                         "sourceType": "ModSettingBool"
                     }
+                },
+                {
+                    "id": "bLordForm:Vampires",
+                    "text": "$COV_LordForm",
+                    "type": "toggle",
+                    "help": "$COV_LordFormH",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
+                    "id": "iLordFormHealth:Vampires",
+                    "text": "$COV_LordFormHealth",
+                    "type": "slider",
+                    "help": "$COV_LordFormHealthH",
+                    "valueOptions": {
+                        "min": 0,
+                        "max": 100,
+                        "step": 5,
+                        "formatString": "{0}%",
+                        "sourceType": "ModSettingInt"
+                    }
                 }
             ]
         },
@@ -200,6 +222,15 @@
                     "text": "$COV_ThrallTeammate",
                     "type": "toggle",
                     "help": "$COV_ThrallTeammateH",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
+                    "id": "bTasks:Thralls",
+                    "text": "$COV_Tasks",
+                    "type": "toggle",
+                    "help": "$COV_TasksH",
                     "valueOptions": {
                         "sourceType": "ModSettingBool"
                     }

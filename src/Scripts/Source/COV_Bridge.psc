@@ -65,6 +65,10 @@ Event OnChimCommand(String npcname, String command, String parameter)
 		Else
 			Report(command, parameter, COV_Thralls.Spare(ArgOf(parameter, 1)))
 		EndIf
+	ElseIf command == "ExtCmdCOV_Task"
+		ThrallTask(command, parameter)
+	ElseIf command == "ExtCmdCOV_LordForm"
+		LordForm(command, parameter)
 	Else
 		Report(command, parameter, "cannot: unknown action")
 	EndIf
@@ -297,6 +301,84 @@ Function ThrallAction(String command, String parameter)
 		Report(command, parameter, done + " (not all: " + failed + ")")
 	Else
 		Report(command, parameter, done)
+	EndIf
+EndFunction
+
+; Thrall_Task (MCM bTasks): "<agent>~<thralls>~<task>". The thralls are named ("A, B") by
+; their master or a Vampire Lord / Volkihar noble; an empty name is the speaking thrall itself.
+Function ThrallTask(String command, String parameter)
+	If !COV_Config.B("bTasks:Thralls")
+		Report(command, parameter, "nothing to do: thrall tasks are turned off in the MCM")
+		Return
+	EndIf
+	Actor npc = ResolveInitiator(parameter)
+	If !npc
+		Report(command, parameter, "cannot: the AI agent could not be identified in the game")
+		Return
+	EndIf
+	String names = ArgOf(parameter, 1)
+	String what = ArgOf(parameter, 2)
+	If what == ""
+		what = names ; a model that put the task alone into target
+		names = ""
+	EndIf
+	Actor[] targets = new Actor[8]
+	If names == "" || COV_Config.NameIs(npc, names)
+		targets[0] = npc
+	Else
+		targets = TargetsOf(names, False)
+	EndIf
+	If !targets[0]
+		Report(command, parameter, "cannot: " + names + " is not here")
+		Return
+	EndIf
+	String done = ""
+	String failed = ""
+	Int i = 0
+	While i < targets.Length && targets[i]
+		Actor t = targets[i]
+		String r
+		If !COV_Thralls.IsThrall(t)
+			r = "cannot: " + t.GetDisplayName() + " is nobody's thrall"
+		ElseIf t != npc && !COV_Thralls.IsMaster(npc) && !COV_Thralls.IsCourt(npc)
+			r = "cannot: " + npc.GetDisplayName() + " is not " + t.GetDisplayName() + "'s master"
+		Else
+			r = COV_Service.Task(t, what)
+		EndIf
+		If StringUtil.Find(r, "cannot") == 0 || StringUtil.Find(r, "nothing to do") == 0
+			failed = Join(failed, r)
+		Else
+			done = Join(done, r)
+		EndIf
+		i += 1
+	EndWhile
+	If done == ""
+		Report(command, parameter, failed)
+	ElseIf failed != ""
+		Report(command, parameter, done + " (not all: " + failed + ")")
+	Else
+		Report(command, parameter, done)
+	EndIf
+	COV_Thralls.SendThralls()
+EndFunction
+
+; Take_Vampire_Lord_Form (MCM bLordForm): "<agent>~lord" takes the form, "back" / "human"
+; / "own" leaves it
+Function LordForm(String command, String parameter)
+	If !COV_Config.B("bLordForm:Vampires")
+		Report(command, parameter, "nothing to do: the Vampire Lord form is turned off in the MCM")
+		Return
+	EndIf
+	Actor npc = ResolveInitiator(parameter)
+	If !npc
+		Report(command, parameter, "cannot: the AI agent could not be identified in the game")
+		Return
+	EndIf
+	String what = ArgOf(parameter, 1)
+	If StringUtil.Find(what, "back") > -1 || StringUtil.Find(what, "human") > -1 || StringUtil.Find(what, "own") > -1 || StringUtil.Find(what, "leave") > -1
+		Report(command, parameter, COV_Service.LeaveLordForm(npc))
+	Else
+		Report(command, parameter, COV_Service.TakeLordForm(npc, False))
 	EndIf
 EndFunction
 

@@ -71,6 +71,16 @@ there like any other action):
                          in the middle of a fight. On a dead person's body it
                          raises them - alive and whole, at once a thrall (MCM).
   Release_Thrall         set a thrall free; they remember having been a thrall.
+  Thrall_Task            put a thrall to work (MCM): follow you, stay or guard a
+                         place, serve you a meal and a drink, hand over what they
+                         carry, or "free" to go back to their own day. Their master
+                         (or a Vampire Lord) gives the order; a thrall who is an AI
+                         agent takes it when told.
+  Take_Vampire_Lord_Form Vampire Lords only: take the winged form of a Vampire Lord,
+                         and back. In a fight one at your side takes it by
+                         themselves when hard pressed (MCM health) and leaves it a
+                         little after (MCM; turn it off if a follower's look does
+                         not come back right after the change).
   Spare                  keep enemies alive: companions only beat them down
                          instead of killing them - by name, or "women" / "men" /
                          "everyone" as a standing order for this fight and the

@@ -94,6 +94,10 @@ Event OnUpdate()
 			COV_Thralls.CollectKneeling() ; enemies kneeling in the mod Surrender
 		EndIf
 		COV_Thralls.CheckDowned()
+		; a Vampire Lord at the player's side takes that form when hard pressed (MCM), and leaves it after
+		If Game.GetPlayer().IsInCombat() || StorageUtil.FormListCount(None, "COV_LordForm") > 0
+			COV_Service.CombatForms()
+		EndIf
 	EndIf
 	If polls % 10 == 1
 		COV_Thralls.UpdatePlayerPower()
@@ -101,6 +105,8 @@ Event OnUpdate()
 	; every second while the player fights under the order: the first blows decide who lives
 	If Game.GetPlayer().IsInCombat() && StorageUtil.HasIntValue(None, "COV_SpareOrder")
 		RegisterForSingleUpdate(1.0)
+	ElseIf Game.GetPlayer().IsInCombat() && COV_Config.B("bLordForm:Vampires")
+		RegisterForSingleUpdate(2.0)
 	Else
 		RegisterForSingleUpdate(PollSeconds)
 	EndIf
@@ -285,6 +291,8 @@ Function SendConfig()
 	j += ",\"thrall_court\":" + COV_Config.Bit(COV_Config.B("bThrallCourt:Thralls"))
 	j += ",\"thrall_masters\":\"" + COV_Config.Clean(COV_Config.S("sThrallMasters:Thralls")) + "\""
 	j += ",\"raise_dead\":" + COV_Config.Bit(COV_Config.B("bRaiseDead:Thralls"))
+	j += ",\"tasks\":" + COV_Config.Bit(COV_Config.B("bTasks:Thralls"))
+	j += ",\"lord_form\":" + COV_Config.Bit(COV_Config.B("bLordForm:Vampires"))
 	j += "}"
 	SendState("config|" + j)
 	COV_Thralls.SendThralls() ; the server learns the thralls of this save too

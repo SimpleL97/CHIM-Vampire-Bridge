@@ -13,7 +13,7 @@ import hashlib, json, os, re, shutil, sys, zipfile
 ROOT = os.path.dirname(os.path.abspath(__file__))
 RELEASE_DIR = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "release")
 NAME = "cov_vampire_bridge"
-SCRIPTS = ["COV", "COV_Config", "COV_Bridge", "COV_Events", "COV_MCM", "COV_Thralls", "COV_EnthrallEffect"]
+SCRIPTS = ["COV", "COV_Config", "COV_Bridge", "COV_Events", "COV_MCM", "COV_Thralls", "COV_Service", "COV_EnthrallEffect"]
 
 version = re.search(r'const COV_VERSION = "([^"]+)"', open(os.path.join(ROOT, "server", NAME, "cov_lib.php")).read()).group(1)
 for path, pattern in [("fomod/info.xml", r'MachineVersion="([^"]+)"'),

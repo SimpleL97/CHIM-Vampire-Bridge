@@ -49,6 +49,22 @@ $GLOBALS["COV_ACTIONS"] = [
         "description" => "Set a thrall free: their will is their own again. When #PLAYER_NAME# asks you to release them, or you as their master decide to. "
             . "Telling the thrall \"you are free\" does nothing in the game - only this action frees them, so call it in the reply where you let them go, with their name in target.",
     ],
+    "ExtCmdCOV_Task" => [
+        "name" => "Thrall_Task",
+        "return" => "#HERIKA_NAME# sets a thrall to a task.",
+        "params" => [
+            "target" => "The thrall(s) by exact name, several separated by commas; leave empty if you are the thrall yourself.",
+            "item" => "The task: follow (follow #PLAYER_NAME#), stay (stay here), guard (stay and guard this place), serve (bring #PLAYER_NAME# a meal and a drink), carry (hand over what they carry), free (back to their own day).",
+        ],
+        "description" => "Put a thrall to work: when #PLAYER_NAME# (or you as their master) orders a thrall to follow, stay or guard a place, serve a meal, or carry things - or as a thrall, when you are ordered so yourself. "
+            . "Saying \"yes, I will stay\" does nothing in the game - call this action in that same reply.",
+    ],
+    "ExtCmdCOV_LordForm" => [
+        "name" => "Take_Vampire_Lord_Form",
+        "return" => "#HERIKA_NAME# changes form.",
+        "params" => ["target" => "\"lord\" to take the form of a Vampire Lord, \"back\" to take your own form again."],
+        "description" => "ONLY if you are a Vampire Lord: take the winged form of a Vampire Lord yourself (target lord), or your own form again (target back) - in a hard fight, to frighten or impress, or when #PLAYER_NAME# asks. Call the action instead of only describing the change.",
+    ],
 ];
 
 foreach ($GLOBALS["COV_ACTIONS"] as $code => $def) {
@@ -139,15 +155,23 @@ $GLOBALS["action_post_process_fnct_ex"][] = function ($actions) {
             }
             $actorName = trim($parts[0]);
             $parameter = isset($call[1]) ? trim($call[1]) : "";
+            $item = null;
             if ($parameter !== "" && $parameter[0] === "{" && function_exists('decodeFunctionExecutionParameterPayload')) {
                 $payload = decodeFunctionExecutionParameterPayload($parameter);
                 if (is_array($payload)) {
                     $parameter = trim(strval($payload["target"] ?? ""));
+                    if (isset($GLOBALS["COV_ACTIONS"][$codeName]["params"]["item"])) {
+                        $item = trim(strval($payload["item"] ?? ""));
+                    }
                 }
             }
             // "~" separates the fields on the Papyrus side; "|" separates the action line itself
             $parameter = trim(str_replace(["~", "|"], " ", $parameter));
             $parts[2] = $actionName . "@" . $actorName . "~" . ($parameter === "" ? "-" : $parameter);
+            if (isset($GLOBALS["COV_ACTIONS"][$codeName]["params"]["item"])) {
+                $item = trim(str_replace(["~", "|"], " ", strval($item ?? "")));
+                $parts[2] .= "~" . ($item === "" ? "-" : mb_strtolower($item));
+            }
             $actions[$n] = implode("|", $parts);
             covLog("action {$codeName} by {$actorName}: " . ($parameter === "" ? "-" : $parameter));
         } catch (Throwable $e) {

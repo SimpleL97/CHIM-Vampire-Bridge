@@ -49,6 +49,7 @@ function covConfig(): array
         $defaults = [
             "enabled" => 1, "log" => 1, "vampires" => "", "blood_hours" => 24, "vampire_lords" => "",
             "lord_gift" => 1, "thralls" => 1, "thrall_court" => 1, "thrall_masters" => "", "raise_dead" => 1,
+            "tasks" => 1, "lord_form" => 1,
         ];
         $cfg = array_merge($defaults, covOptGet(COV_CONFIG_KEY) ?? []);
     }
@@ -164,6 +165,15 @@ function covApplyGameState(string $data, float $now): void
                 unset($state["former_thralls"][trim($kv[0])]);
             }
         }
+    } elseif (preg_match('/tasks\|([^()\r\n]*)/u', $data, $m)) {
+        // the thralls' standing tasks (Thrall_Task): "Name=follow,Name2=guard" or "-"
+        $state["tasks"] = [];
+        foreach (array_filter(array_map('trim', explode(",", $m[1]))) as $pair) {
+            $kv = explode("=", $pair, 2);
+            if (count($kv) === 2 && trim($kv[0]) !== "" && trim($kv[0]) !== "-") {
+                $state["tasks"][trim($kv[0])] = trim($kv[1]);
+            }
+        }
     } elseif (preg_match('/released\|([^=()\r\n]+)=([^()\r\n]*)/u', $data, $m)) {
         // set free in the game (not merely missing after loading an older save): they
         // remember having been a thrall, for good
@@ -237,6 +247,9 @@ function covVampirePromptFor(string $npc, float $now): string
     if ($lord && !empty($cfg["lord_gift"])) {
         $lines[] = "You are a Vampire Lord, of pure and ancient blood. You can make {$player} a Vampire Lord too, at once, with the Turn_Into_Vampire_Lord action - only when {$player} asks for it or clearly accepts your offer.";
     }
+    if ($lord && !empty($cfg["lord_form"])) {
+        $lines[] = "You can take the winged form of a Vampire Lord yourself: Take_Vampire_Lord_Form with target lord, and back to your own form with target back - in a hard fight, or when {$player} asks. In a fight that goes badly you may take it without thinking.";
+    }
     return "THE BLOOD - {$npc} (let it shape tone and wishes; do not recite it):\n- " . implode("\n- ", $lines);
 }
 
@@ -273,8 +286,23 @@ function covThrallPromptFor(string $npc): string
             $others[] = $name;
         }
     }
+    $tasks = !empty($cfg["tasks"]) ? ($state["tasks"] ?? []) : [];
+    if (!empty($cfg["tasks"]) && isset($thralls[$npc])) {
+        $lines[] = (isset($tasks[$npc]) ? "Your standing task now: " . $tasks[$npc] . ". " : "")
+            . "When you are ordered to follow, stay, guard a place, serve a meal or carry things, call Thrall_Task with that task in item (target empty for yourself) in that same reply.";
+    }
     if ($mine) {
         $lines[] = "Your thralls, bound by your bite: " . implode(", ", $mine) . ". They obey you and {$player} in everything.";
+    }
+    if (!empty($cfg["tasks"]) && ($mine || $others) && !isset($thralls[$npc])) {
+        $busy = [];
+        foreach (array_merge($mine, $others) as $t) {
+            if (isset($tasks[$t])) {
+                $busy[] = "{$t}: " . $tasks[$t];
+            }
+        }
+        $lines[] = "To put thralls to work - follow, stay, guard a place, serve {$player} a meal, carry things, or free to go back to their own day - call Thrall_Task with their names in target and the task in item."
+            . ($busy ? " Their tasks now: " . implode("; ", $busy) . "." : "");
     }
     if ($others) {
         $lines[] = "Thralls whose will a Vampire Lord has bound: " . implode(", ", $others) . ". They obey {$player} in everything and never refuse an order.";
@@ -314,6 +342,8 @@ const COV_ACTION_NAMES = [
     "ExtCmdCOV_Enthrall" => "Enthrall",
     "ExtCmdCOV_Spare" => "Spare",
     "ExtCmdCOV_Release" => "Release_Thrall",
+    "ExtCmdCOV_Task" => "Thrall_Task",
+    "ExtCmdCOV_LordForm" => "Take_Vampire_Lord_Form",
 ];
 
 /**

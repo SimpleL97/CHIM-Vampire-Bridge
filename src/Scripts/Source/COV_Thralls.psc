@@ -594,6 +594,7 @@ string Function Release(Actor target) Global
 		target.SetPlayerTeammate(False)
 	EndIf
 	Unprotect(target)
+	COV_Service.ClearTask(target) ; a standing task (Thrall_Task) ends with the bond
 	; let go on purpose: not a captive to be bitten again (CollectKneeling, CheckDowned)
 	StorageUtil.SetFloatValue(target, "COV_ReleasedAt", Utility.GetCurrentGameTime())
 	StorageUtil.FormListRemove(None, "COV_Spared", target, True)
@@ -628,6 +629,23 @@ Function SendThralls() Global
 		s = "-"
 	EndIf
 	COV_Events.SendState("thralls|" + s)
+	; the standing tasks (Thrall_Task): "tasks|Name=follow,Name2=guard" or "tasks|-"
+	string t = ""
+	int j = StorageUtil.FormListCount(None, "COV_Thralls") - 1
+	While j >= 0
+		Actor b = StorageUtil.FormListGet(None, "COV_Thralls", j) as Actor
+		If b && StorageUtil.GetStringValue(b, "COV_ThrallTask") != ""
+			If t != ""
+				t += ","
+			EndIf
+			t += COV_Config.Name(b.GetDisplayName()) + "=" + StorageUtil.GetStringValue(b, "COV_ThrallTask")
+		EndIf
+		j -= 1
+	EndWhile
+	If t == ""
+		t = "-"
+	EndIf
+	COV_Events.SendState("tasks|" + t)
 EndFunction
 
 ; the player's lesser power comes with being a Vampire Lord (and goes when they are cured)

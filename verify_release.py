@@ -7,7 +7,7 @@ the deployed game files, and fails if a compiled script is older than its source
 import io, os, sys, zipfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-SCRIPTS = ["COV", "COV_Config", "COV_Bridge", "COV_Events", "COV_MCM", "COV_Thralls", "COV_EnthrallEffect"]
+SCRIPTS = ["COV", "COV_Config", "COV_Bridge", "COV_Events", "COV_MCM", "COV_Thralls", "COV_Service", "COV_EnthrallEffect"]
 zpath = sys.argv[1]
 live = sys.argv[2] if len(sys.argv) > 2 else None
 data = sys.argv[3] if len(sys.argv) > 3 else None
