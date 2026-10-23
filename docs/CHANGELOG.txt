@@ -6,6 +6,11 @@ CHIM Vampire Bridge - changelog
   with their own plugin, scripts, MCM and CHIM actions (ExtCmdCOV_*). They work as
   they did there.
 - AI actions: Feed_On_Blood, Turn_Into_Vampire_Lord, Enthrall, Release_Thrall, Spare.
+- Thrall_Task (MCM, Thralls): thralls at work - follow you, stay or guard a place, serve you
+  a meal and a drink, hand over what they carry, or go back to their own day.
+- Take_Vampire_Lord_Form (MCM, Vampires): a Vampire Lord NPC takes the winged form and back;
+  at your side in a fight they take it by themselves when hard pressed (MCM health) and
+  leave it after the fight.
 - Blood thirst, vampirism by bite (Sanguinare Vampiris), Vampire Lords (Dawnguard's
   own and the names in the MCM), thralls (Vampire Lords, the Volkihar court and the
   names in the MCM), the player's lesser power "Vampire's Thrall".
