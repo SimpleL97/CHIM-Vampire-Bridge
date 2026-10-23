@@ -61,6 +61,7 @@ Function ConfigChanged()
 	EndIf
 	lastRealTime = now
 	COV_Config.Log("loaded; settings sent to CHIM on the next poll")
+	COV_Thralls.UpdatePlayerPower() ; the power and the sleeping one's choice follow their MCM switches at once
 EndFunction
 
 ; ---------------------------------------------------------------- polling

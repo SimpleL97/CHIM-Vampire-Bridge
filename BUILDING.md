@@ -57,7 +57,8 @@ Writes `build/CHIMVampireBridge.esp`, byte by byte and the same on every run. ES
 | `xx000801` | QUST `COV_EventsQuest` + script `COV_Events` | state for the server, infections, the player's power, moving in from CHIM OStim Bridge 1.x |
 | `xx000802` | QUST `COV_MCMQuest` + `COV_MCM`, player alias with `SKI_PlayerLoadGameAlias` | MCM menu |
 | `xx000803` | MGEF `COV_ThrallEffect` + script `COV_EnthrallEffect` | the bite of the lesser power (script archetype, self) |
-| `xx000804` | SPEL `COV_ThrallPower` | lesser power "Vampire's Thrall" (shout key), given to a Vampire Lord player |
+| `xx000804` | SPEL `COV_ThrallPower` | lesser power "Vampire's Thrall" (shout key), given to a Vampire Lord player; raises the dead |
+| `xx000805` | PERK `COV_SleepThrallPerk` + fragment `PRKF_COV_SleepThrallPerk` | "Make your thrall" next to Feed on a sleeping person (Activate entry point, like `VampireFeed`), given to a Vampire Lord player |
 
 The quests are technical script holders: start-game-enabled, no stages, no journal entries.
 The lesser power is laid out like the vanilla `PowerKhajiitNightEye`.

@@ -26,6 +26,9 @@ CHIM Vampire Bridge - changelog
   MCM: a chance that the order does not hold for an enemy (10% by default).
 - Vampire Lords raise the dead: Enthrall (or the player's Vampire's Thrall) on a dead
   person's body brings them back to life, whole, as a thrall (MCM, on by default).
+  The player's power only raises the dead and is given and taken by its MCM switch.
+- A Vampire Lord player who activates a sleeping person (E, as for feeding) gets
+  "Make your thrall" next to Feed (MCM, Thralls; not there unless a Vampire Lord).
 - Works with Surrender - Enemies Yield and Comply with Your Demands (optional): enemies
   kneeling in surrender are captives the nearest Vampire Lord hears of and can bind;
   spared ones cannot be finished off by companions while they kneel.

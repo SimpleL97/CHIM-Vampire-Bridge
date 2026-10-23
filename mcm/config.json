@@ -218,6 +218,15 @@
                     }
                 },
                 {
+                    "id": "bSleepThrall:Thralls",
+                    "text": "$COV_SleepThrall",
+                    "type": "toggle",
+                    "help": "$COV_SleepThrallH",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
                     "id": "bThrallTeammate:Thralls",
                     "text": "$COV_ThrallTeammate",
                     "type": "toggle",

@@ -101,6 +101,50 @@ string Function Bite(Actor master, Actor target) Global
 	Return Bind(target, master)
 EndFunction
 
+; The player's lesser power "Vampire's Thrall" (MCM bThrallPower): it only raises the dead -
+; the body under the crosshair rises, whole, as the player's thrall. The living are not
+; touched by it. It does not ask the player to be a Vampire Lord: the power is the gift.
+string Function RaiseByPower(Actor master, Actor target) Global
+	If !target || target == master
+		Return "cannot: look at a dead body"
+	EndIf
+	string who = target.GetDisplayName()
+	If !target.IsDead()
+		Return "cannot: " + who + " is alive - Vampire's Thrall only raises the dead"
+	EndIf
+	If !COV_Config.B("bThralls:Thralls")
+		Return "cannot: thralls are turned off in the MCM"
+	EndIf
+	If !CanRaise(target)
+		Return "cannot: " + who + " cannot be raised"
+	EndIf
+	Raise(master, target)
+	If target.IsDead()
+		Return "cannot: " + who + " did not rise"
+	EndIf
+	Return Bind(target, master)
+EndFunction
+
+; A Vampire Lord player who activates a sleeping person, the way one feeds (the perk
+; COV_SleepThrallPerk adds the choice next to Feed): bound in their sleep, no bite to wake them
+string Function BindSleeping(Actor master, Actor target) Global
+	If !target || target.IsDead() || target.GetSleepState() != 3
+		Return "cannot: they are not asleep"
+	EndIf
+	If IsThrall(target)
+		Return "nothing to do: " + target.GetDisplayName() + " already is a thrall of " + StorageUtil.GetStringValue(target, "COV_ThrallMaster")
+	EndIf
+	string why = Refusal(master, target)
+	If why != ""
+		Return why
+	EndIf
+	EffectShader glow = Game.GetFormFromFile(0x075272, "Skyrim.esm") as EffectShader
+	If glow
+		glow.Play(target, 2.0)
+	EndIf
+	Return Bind(target, master)
+EndFunction
+
 ; ---------------------------------------------------------------- the mod Surrender
 ; "Surrender - Enemies Yield and Comply with Your Demands" (DB Surrender.esp, optional): an
 ; enemy at 15% health, hit by anyone, kneels for 3 minutes - in bleedout, with the spell
@@ -655,13 +699,26 @@ Function UpdatePlayerPower() Global
 	If !power
 		Return
 	EndIf
+	; the power (it only raises the dead) for a Vampire Lord player with its MCM switch on
 	bool want = COV_Config.B("bEnabled:General") && COV_Config.B("bThralls:Thralls") && COV_Config.B("bThrallPower:Thralls") && IsLord(p)
 	If want && !p.HasSpell(power)
 		p.AddSpell(power, False)
-		Debug.Notification("You can bind a mortal's will with a bite: Vampire's Thrall")
+		Debug.Notification("Vampire's Thrall: raise the dead as your thralls")
 		COV_Config.Log("the player got the lesser power Vampire's Thrall")
 	ElseIf !want && p.HasSpell(power)
 		p.RemoveSpell(power)
 		COV_Config.Log("the lesser power Vampire's Thrall was taken away")
+	EndIf
+	; the sleeping one's thrall choice (next to Feed) only for a Vampire Lord player (MCM bSleepThrall)
+	Perk sleeper = Game.GetFormFromFile(0x000805, "CHIMVampireBridge.esp") as Perk ; COV_SleepThrallPerk
+	If sleeper
+		bool lord = COV_Config.B("bEnabled:General") && COV_Config.B("bThralls:Thralls") && COV_Config.B("bSleepThrall:Thralls") && IsLord(p)
+		If lord && !p.HasPerk(sleeper)
+			p.AddPerk(sleeper)
+			COV_Config.Log("the player can make a sleeping one their thrall (E, next to Feed)")
+		ElseIf !lord && p.HasPerk(sleeper)
+			p.RemovePerk(sleeper)
+			COV_Config.Log("the sleeping one's thrall choice was taken away")
+		EndIf
 	EndIf
 EndFunction

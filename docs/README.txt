@@ -90,9 +90,12 @@ there like any other action):
                          of them who lies beaten down. MCM: a chance that the
                          order does not hold for an enemy (10% by default).
 Once you are a Vampire Lord yourself you get the lesser power "Vampire's Thrall":
-equip it like a shout, look at someone close and use it (Z by default) - you bite
-them and they become your thrall; used on your own thrall it sets them free, on a
-dead body it raises the dead as your thrall.
+equip it like a shout, look at a dead body close by and use it (Z by default) -
+they rise whole and alive as your thrall. It does nothing to the living.
+As a Vampire Lord you can also crouch by a sleeping person and activate them (E,
+as for feeding): next to Feed there is "Make your thrall".
+Both are MCM switches (Thralls) and only there while you are a Vampire Lord;
+switched off, the power and the choice are taken away.
 Who can enthrall (MCM, Thralls): the Vampire Lords, the Volkihar court (a toggle,
 on by default) and the names you list under "Can also enthrall".
 Every outcome is reported back to CHIM, so a refused action ("there is a fight
