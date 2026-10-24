@@ -16,6 +16,7 @@ the same file. It holds:
   0x805 PERK    COV_SleepThrallPerk - script fragment PRKF_COV_SleepThrallPerk: the choice
                                    "Make your thrall" next to Feed on a sleeping person,
                                    for a Vampire Lord player
+  0x806 FACT    COV_ThrallFaction - every thrall of this mod (no relations, hidden)
 
 The three quests are start-game-enabled (DNAM flags 0x0111), so they also start
 on an existing save. Run: python3 -I make_esp.py [output path]
@@ -107,8 +108,9 @@ def ctda(op_flags, value, func, param1=0, run_on=0):
 
 # Conditions copied from VampireFeed's sleeping-target entry: the owner (player) is not swimming
 # (IsSwimming 185 == 0); the target is alive (GetDead 46 == 0), no child (IsChild 365 == 0), a
-# person (HasKeyword 560 ActorTypeNPC 013794 == 1) and asleep (GetSleeping 49 == 3). Whether the
-# player is a Vampire Lord is checked by giving the perk only then (COV_Thralls.UpdatePlayerPower).
+# person (HasKeyword 560 ActorTypeNPC 013794 == 1), asleep (GetSleeping 49 == 3) and no thrall yet
+# (GetInFaction 71 COV_ThrallFaction == 0). Whether the player is a Vampire Lord is checked by
+# giving the perk only then (COV_Thralls.UpdatePlayerPower).
 SLEEP_LABEL = "Make your thrall"
 SLEEP_DESC = "As a Vampire Lord, bind a sleeping person's will: they become your thrall."
 perk_vmad = struct.pack('<hhH', 5, 2, 1) + script('PRKF_COV_SleepThrallPerk')
@@ -122,17 +124,20 @@ perk_body = (sub(b'EDID', zstr('COV_SleepThrallPerk')) + sub(b'VMAD', perk_vmad)
              + sub(b'PRKC', bytes([0])) + ctda(0x00, 0.0, 185)                          # owner: not swimming
              + sub(b'PRKC', bytes([1])) + ctda(0x00, 0.0, 46) + ctda(0x00, 0.0, 365)    # target: alive, no child
              + ctda(0x00, 1.0, 560, 0x013794) + ctda(0x00, 3.0, 49)                     # a person, asleep
+             + ctda(0x00, 0.0, 71, 0x01000806)                                          # not a thrall yet
              + sub(b'EPFT', bytes([4])) + sub(b'EPF2', zstr(SLEEP_LABEL))
              + sub(b'EPF3', struct.pack('<HH', 0, 0))                                   # no flags, fragment 0
              + sub(b'PRKF', b''))
 sleep_perk = record(b'PERK', 0x01000805, perk_body)
+# every thrall of this mod: no relations, flag "hidden from PC"
+thrall_faction = record(b'FACT', 0x01000806, sub(b'EDID', zstr('COV_ThrallFaction')) + sub(b'DATA', struct.pack('<I', 1)))
 
 recs = quest(0x01000800, 'COV_BridgeQuest', 'CHIM Vampire Bridge', vmad_plain('COV_Bridge'))
 recs += quest(0x01000801, 'COV_EventsQuest', 'CHIM Vampire Bridge Events', vmad_plain('COV_Events'))
 recs += quest(0x01000802, 'COV_MCMQuest', 'CHIM Vampire Bridge MCM', vmad_mcm('COV_MCM', 0x01000802), alias=True)
-grup = group(b'MGEF', mgef) + group(b'SPEL', spel) + group(b'PERK', sleep_perk) + group(b'QUST', recs)
+grup = group(b'FACT', thrall_faction) + group(b'MGEF', mgef) + group(b'SPEL', spel) + group(b'PERK', sleep_perk) + group(b'QUST', recs)
 
-hdr = sub(b'HEDR', struct.pack('<fII', 1.71, 10, 0x806))  # version 1.71, 6 records + 4 groups, next object id
+hdr = sub(b'HEDR', struct.pack('<fII', 1.71, 12, 0x807))  # version 1.71, 7 records + 5 groups, next object id
 hdr += sub(b'CNAM', zstr('SaurOff'))
 hdr += sub(b'SNAM', zstr('CHIM Vampire Bridge - vampires, Vampire Lords, the bite, blood thirst and thralls for CHIM AI agents.'))
 hdr += sub(b'MAST', zstr('Skyrim.esm')) + sub(b'DATA', b'\0' * 8)

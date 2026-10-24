@@ -62,6 +62,7 @@ Function ConfigChanged()
 	lastRealTime = now
 	COV_Config.Log("loaded; settings sent to CHIM on the next poll")
 	COV_Thralls.UpdatePlayerPower() ; the power and the sleeping one's choice follow their MCM switches at once
+	COV_Thralls.SyncAll() ; and the thralls one may feed on
 EndFunction
 
 ; ---------------------------------------------------------------- polling
@@ -102,6 +103,7 @@ Event OnUpdate()
 	EndIf
 	If polls % 10 == 1
 		COV_Thralls.UpdatePlayerPower()
+		COV_Thralls.SyncAll()
 	EndIf
 	; every second while the player fights under the order: the first blows decide who lives
 	If Game.GetPlayer().IsInCombat() && StorageUtil.HasIntValue(None, "COV_SpareOrder")
@@ -294,6 +296,7 @@ Function SendConfig()
 	j += ",\"raise_dead\":" + COV_Config.Bit(COV_Config.B("bRaiseDead:Thralls"))
 	j += ",\"tasks\":" + COV_Config.Bit(COV_Config.B("bTasks:Thralls"))
 	j += ",\"lord_form\":" + COV_Config.Bit(COV_Config.B("bLordForm:Vampires"))
+	j += ",\"feed_thralls\":" + COV_Config.Bit(COV_Config.B("bFeedThralls:Thralls"))
 	j += "}"
 	SendState("config|" + j)
 	COV_Thralls.SendThralls() ; the server learns the thralls of this save too

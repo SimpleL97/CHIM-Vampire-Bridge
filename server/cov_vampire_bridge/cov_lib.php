@@ -49,7 +49,7 @@ function covConfig(): array
         $defaults = [
             "enabled" => 1, "log" => 1, "vampires" => "", "blood_hours" => 24, "vampire_lords" => "",
             "lord_gift" => 1, "thralls" => 1, "thrall_court" => 1, "thrall_masters" => "", "raise_dead" => 1,
-            "tasks" => 1, "lord_form" => 1,
+            "tasks" => 1, "lord_form" => 1, "feed_thralls" => 1,
         ];
         $cfg = array_merge($defaults, covOptGet(COV_CONFIG_KEY) ?? []);
     }
@@ -165,6 +165,9 @@ function covApplyGameState(string $data, float $now): void
                 unset($state["former_thralls"][trim($kv[0])]);
             }
         }
+    } elseif (preg_match('/drinkable\|([^()\r\n]*)/u', $data, $m)) {
+        // the thralls of living blood one may drink from: "Name,Name2" or "-"
+        $state["drinkable"] = array_values(array_filter(array_map('trim', explode(",", $m[1])), fn($n) => $n !== "" && $n !== "-"));
     } elseif (preg_match('/tasks\|([^()\r\n]*)/u', $data, $m)) {
         // the thralls' standing tasks (Thrall_Task): "Name=follow,Name2=guard" or "-"
         $state["tasks"] = [];
@@ -242,8 +245,14 @@ function covVampirePromptFor(string $npc, float $now): string
         $state["last_blood"][$npc] = $now; // first sight: start satisfied
         covOptSet(COV_STATE_KEY, $state);
     }
-    $lines[] = covBloodText(covHoursSince($state["last_blood"][$npc] ?? null, $now), intval($cfg["blood_hours"] ?? 24));
+    $hours = covHoursSince($state["last_blood"][$npc] ?? null, $now);
+    $lines[] = covBloodText($hours, intval($cfg["blood_hours"] ?? 24));
     $lines[] = "To actually drink blood, use the Feed_On_Blood action.";
+    // a thirsty Vampire Lord drinks from the thralls (living blood only, sent by the game)
+    $drink = array_values(array_filter($state["drinkable"] ?? [], fn($n) => mb_strtolower($n) !== mb_strtolower($npc)));
+    if ($lord && !empty($cfg["feed_thralls"]) && !empty($cfg["thralls"]) && $drink && $hours !== null && $hours >= max(1, intval($cfg["blood_hours"] ?? 24))) {
+        $lines[] = "The thralls are there to be drunk from: " . implode(", ", $drink) . ". When you are thirsty, drink from one of them who is here (Feed_On_Blood, target their name) - they give their neck without a word.";
+    }
     if ($lord && !empty($cfg["lord_gift"])) {
         $lines[] = "You are a Vampire Lord, of pure and ancient blood. You can make {$player} a Vampire Lord too, at once, with the Turn_Into_Vampire_Lord action - only when {$player} asks for it or clearly accepts your offer.";
     }

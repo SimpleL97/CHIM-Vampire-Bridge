@@ -94,6 +94,11 @@ Function Feed(String command, String parameter)
 	If victim == npc
 		victim = Game.GetPlayer()
 	EndIf
+	; only real living blood: no undead, spirit, daedra or machine, nothing summoned, no vampire
+	If victim != Game.GetPlayer() && !COV_Thralls.HasBlood(victim)
+		Report(command, parameter, "cannot feed: " + victim.GetDisplayName() + " has no living blood to drink (undead, a spirit, something summoned, a vampire or a child)")
+		Return
+	EndIf
 	If npc.IsInCombat() || npc.GetCombatState() > 0
 		Report(command, parameter, "refuses: there is a fight going on")
 		Return

@@ -59,6 +59,7 @@ Writes `build/CHIMVampireBridge.esp`, byte by byte and the same on every run. ES
 | `xx000803` | MGEF `COV_ThrallEffect` + script `COV_EnthrallEffect` | the bite of the lesser power (script archetype, self) |
 | `xx000804` | SPEL `COV_ThrallPower` | lesser power "Vampire's Thrall" (shout key), given to a Vampire Lord player; raises the dead |
 | `xx000805` | PERK `COV_SleepThrallPerk` + fragment `PRKF_COV_SleepThrallPerk` | "Make your thrall" next to Feed on a sleeping person (Activate entry point, like `VampireFeed`), given to a Vampire Lord player |
+| `xx000806` | FACT `COV_ThrallFaction` | every thrall of this mod (keeps "Make your thrall" off them); thralls of living blood also join Dawnguard's `DLC1ThrallFaction` for the game's own Feed |
 
 The quests are technical script holders: start-game-enabled, no stages, no journal entries.
 The lesser power is laid out like the vanilla `PowerKhajiitNightEye`.

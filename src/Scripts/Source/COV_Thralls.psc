@@ -602,6 +602,7 @@ string Function Bind(Actor target, Actor master) Global
 	Calm(target)
 	target.SetActorValue("Aggression", 0.0)
 	Protect(target) ; a thrall is not killed by a stray blow of the player's companions
+	SyncFactions(target)
 	target.SetRelationshipRank(player, 3)
 	player.SetRelationshipRank(target, 3)
 	If COV_Config.B("bThrallTeammate:Thralls") && !target.IsPlayerTeammate()
@@ -626,6 +627,7 @@ string Function Release(Actor target) Global
 	; the server keeps this for good: the freed one remembers having been a thrall
 	COV_Events.SendState("released|" + COV_Config.Name(who) + "=" + COV_Config.Name(StorageUtil.GetStringValue(target, "COV_ThrallMaster")))
 	StorageUtil.FormListRemove(None, "COV_Thralls", target, True)
+	SyncFactions(target)
 	If StorageUtil.GetIntValue(target, "COV_WasFoe") == 1
 		; a former enemy (or one raised from the dead) leaves in peace: their old factions are
 		; gone, but their bandit aggression would set them on the player's people at once
@@ -690,6 +692,91 @@ Function SendThralls() Global
 		t = "-"
 	EndIf
 	COV_Events.SendState("tasks|" + t)
+	; the thralls of living blood one may drink from: "drinkable|Name,Name2" or "drinkable|-"
+	string d = Drinkable()
+	StorageUtil.SetStringValue(None, "COV_DrinkableSent", d)
+	COV_Events.SendState("drinkable|" + d)
+EndFunction
+
+; ---------------------------------------------------------------- feeding on thralls
+
+; a person of real living blood: no undead, spirit, daedra or machine, nothing summoned or
+; raised by magic, no vampire and no child - the only ones there is blood to drink from
+bool Function HasBlood(Actor a) Global
+	If !a || a.IsDead() || a.IsChild() || a.IsGhost() || a.IsCommandedActor() || COV_Config.IsVampire(a)
+		Return False
+	EndIf
+	If !a.HasKeyword(Game.GetFormFromFile(0x013794, "Skyrim.esm") as Keyword) ; ActorTypeNPC
+		Return False
+	EndIf
+	Return !a.HasKeyword(Game.GetFormFromFile(0x013796, "Skyrim.esm") as Keyword) && !a.HasKeyword(Game.GetFormFromFile(0x0D205E, "Skyrim.esm") as Keyword) && !a.HasKeyword(Game.GetFormFromFile(0x013797, "Skyrim.esm") as Keyword) && !a.HasKeyword(Game.GetFormFromFile(0x01397A, "Skyrim.esm") as Keyword) && !a.HasKeyword(Game.GetFormFromFile(0x0A82BB, "Skyrim.esm") as Keyword) ; ActorTypeUndead, ActorTypeGhost, ActorTypeDaedra, ActorTypeDwarven, Vampire
+EndFunction
+
+; A thrall's factions: COV_ThrallFaction for every thrall (the sleeping one's choice "Make your
+; thrall" is not offered on them), and Dawnguard's DLC1ThrallFaction for those of living blood
+; while the MCM allows feeding on thralls - the game's own VampireFeed perk then offers Feed
+; next to Talk when a vampire player activates them, standing, as with the thralls of Castle
+; Volkihar. Only what this mod added is taken away again.
+Function SyncFactions(Actor a) Global
+	If !a
+		Return
+	EndIf
+	bool bound = IsThrall(a)
+	Faction own = Game.GetFormFromFile(0x000806, "CHIMVampireBridge.esp") as Faction ; COV_ThrallFaction
+	If own
+		If bound && !a.IsInFaction(own)
+			a.AddToFaction(own)
+		ElseIf !bound && a.IsInFaction(own)
+			a.RemoveFromFaction(own)
+		EndIf
+	EndIf
+	Faction cattle = Game.GetFormFromFile(0x0162F7, "Dawnguard.esm") as Faction ; DLC1ThrallFaction
+	If !cattle
+		Return
+	EndIf
+	bool feed = bound && COV_Config.B("bFeedThralls:Thralls") && HasBlood(a)
+	If feed && !a.IsInFaction(cattle)
+		a.AddToFaction(cattle)
+		StorageUtil.SetIntValue(a, "COV_FeedFaction", 1)
+	ElseIf !feed && StorageUtil.GetIntValue(a, "COV_FeedFaction") == 1
+		a.RemoveFromFaction(cattle)
+		StorageUtil.UnsetIntValue(a, "COV_FeedFaction")
+	EndIf
+EndFunction
+
+; the thralls one may drink from, "Name,Name2" or "-"
+string Function Drinkable() Global
+	string d = ""
+	If COV_Config.B("bFeedThralls:Thralls")
+		int i = StorageUtil.FormListCount(None, "COV_Thralls") - 1
+		While i >= 0
+			Actor a = StorageUtil.FormListGet(None, "COV_Thralls", i) as Actor
+			If HasBlood(a)
+				If d != ""
+					d += ","
+				EndIf
+				d += COV_Config.Name(a.GetDisplayName())
+			EndIf
+			i -= 1
+		EndWhile
+	EndIf
+	If d == ""
+		d = "-"
+	EndIf
+	Return d
+EndFunction
+
+; every thrall's factions follow the MCM and what they are now (a thrall turned vampire is no
+; longer one to drink from); the server hears of a changed list
+Function SyncAll() Global
+	int i = StorageUtil.FormListCount(None, "COV_Thralls") - 1
+	While i >= 0
+		SyncFactions(StorageUtil.FormListGet(None, "COV_Thralls", i) as Actor)
+		i -= 1
+	EndWhile
+	If Drinkable() != StorageUtil.GetStringValue(None, "COV_DrinkableSent")
+		SendThralls()
+	EndIf
 EndFunction
 
 ; the player's lesser power comes with being a Vampire Lord (and goes when they are cured)

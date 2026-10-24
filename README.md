@@ -41,7 +41,9 @@ release (FOMOD archive) instead of building it.
   court and the names in the MCM bind thralls; the player gets the lesser power
   "Vampire's Thrall" (shout key) once they are a Vampire Lord: it raises the dead as
   thralls (not the living), and sleeping people get "Make your thrall" next to Feed
-  (E). Both are MCM switches. Thralls obey, released
+  (E). Both are MCM switches. Thralls of living blood are fed on like Castle
+  Volkihar's (E, standing: Talk or Feed), and thirsty Vampire Lord companions drink
+  from them; no feeding on undead, spirits or summoned beings. Thralls obey, released
   thralls remember. Vampire Lords (the player too) raise the dead as thralls, alive and
   whole; "turn the women into thralls" has them bind every spared enemy who is down.
 - **Notifications and a log file** in the game and on the CHIM server.
