@@ -101,11 +101,6 @@ thralls of Castle Volkihar - as a vampire walk up and activate them (E), no need
 to crouch: Talk, or the game's own Feed. Thirsty Vampire Lord companions drink
 from the thralls too. Nobody feeds on the undead, spirits, summoned beings,
 vampires or children.
-Feeding on thralls (MCM, Thralls): a thrall of living blood is fed on like the
-thralls of Castle Volkihar - as a vampire walk up and activate them (E), no need
-to crouch: Talk, or the game's own Feed. Thirsty Vampire Lord companions drink
-from the thralls too. Nobody feeds on the undead, spirits, summoned beings,
-vampires or children.
 Who can enthrall (MCM, Thralls): the Vampire Lords, the Volkihar court (a toggle,
 on by default) and the names you list under "Can also enthrall".
 Every outcome is reported back to CHIM, so a refused action ("there is a fight

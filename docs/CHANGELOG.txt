@@ -34,11 +34,6 @@ CHIM Vampire Bridge - changelog
   standing); thirsty Vampire Lord companions are told they may drink from them.
 - Feed_On_Blood only on living blood: no undead, spirits, summoned beings, vampires
   or children.
-- Feeding on thralls (MCM, Thralls): thralls of living blood join Dawnguard's
-  DLC1ThrallFaction, so a vampire player gets the game's own Feed next to Talk (E,
-  standing); thirsty Vampire Lord companions are told they may drink from them.
-- Feed_On_Blood only on living blood: no undead, spirits, summoned beings, vampires
-  or children.
 - Works with Surrender - Enemies Yield and Comply with Your Demands (optional): enemies
   kneeling in surrender are captives the nearest Vampire Lord hears of and can bind;
   spared ones cannot be finished off by companions while they kneel.

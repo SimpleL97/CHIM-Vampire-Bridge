@@ -236,15 +236,6 @@
                     }
                 },
                 {
-                    "id": "bFeedThralls:Thralls",
-                    "text": "$COV_FeedThralls",
-                    "type": "toggle",
-                    "help": "$COV_FeedThrallsH",
-                    "valueOptions": {
-                        "sourceType": "ModSettingBool"
-                    }
-                },
-                {
                     "id": "bThrallTeammate:Thralls",
                     "text": "$COV_ThrallTeammate",
                     "type": "toggle",
