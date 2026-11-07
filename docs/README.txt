@@ -95,7 +95,12 @@ they rise whole and alive as your thrall. It does nothing to the living.
 As a Vampire Lord you can also crouch by a sleeping person and activate them (E,
 as for feeding): next to Feed there is "Make your thrall".
 Both are MCM switches (Thralls) and only there while you are a Vampire Lord;
-switched off, the power and the choice are taken away.
+switched off, the power and the choice are taken away. Making a sleeper your thrall
+is a bite (the game's own feeding animation); raising the dead is the Vampire Lord's
+reanimation glow.
+A thrall raised from the dead lives only by the bond (MCM, Thralls): released, they
+fall dead again, and with the second switch they crumble to ash like the game's own
+raised dead and can never be raised again.
 Feeding on thralls (MCM, Thralls): a thrall of living blood is fed on like the
 thralls of Castle Volkihar - as a vampire walk up and activate them (E), no need
 to crouch: Talk, or the game's own Feed. Thirsty Vampire Lord companions drink

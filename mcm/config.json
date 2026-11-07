@@ -278,6 +278,24 @@
                     "valueOptions": {
                         "sourceType": "ModSettingBool"
                     }
+                },
+                {
+                    "id": "bRaisedDie:Thralls",
+                    "text": "$COV_RaisedDie",
+                    "type": "toggle",
+                    "help": "$COV_RaisedDieH",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
+                    "id": "bRaisedAsh:Thralls",
+                    "text": "$COV_RaisedAsh",
+                    "type": "toggle",
+                    "help": "$COV_RaisedAshH",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
                 }
             ]
         }

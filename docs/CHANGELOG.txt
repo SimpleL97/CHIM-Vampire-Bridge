@@ -27,6 +27,11 @@ CHIM Vampire Bridge - changelog
 - Vampire Lords raise the dead: Enthrall (or the player's Vampire's Thrall) on a dead
   person's body brings them back to life, whole, as a thrall (MCM, on by default).
   The player's power only raises the dead and is given and taken by its MCM switch.
+- A thrall raised from the dead lives only by the bond (MCM, Thralls, on by default):
+  released, they fall dead again - and with a second switch (on by default) crumble to a
+  pile of ash like the game's own raised dead, which can never be raised again.
+- Making a sleeping person your thrall is a bite: the game's own feeding animation plays
+  before the bond; raising the dead keeps the Vampire Lord's reanimation glow.
 - A Vampire Lord player who activates a sleeping person (E, as for feeding) gets
   "Make your thrall" next to Feed (MCM, Thralls; not there unless a Vampire Lord).
 - Feeding on thralls (MCM, Thralls): thralls of living blood join Dawnguard's

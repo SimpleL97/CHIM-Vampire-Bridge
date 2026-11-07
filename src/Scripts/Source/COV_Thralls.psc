@@ -138,9 +138,16 @@ string Function BindSleeping(Actor master, Actor target) Global
 	If why != ""
 		Return why
 	EndIf
-	EffectShader glow = Game.GetFormFromFile(0x075272, "Skyrim.esm") as EffectShader
-	If glow
-		glow.Play(target, 2.0)
+	; the game's own feeding bite on a sleeper, played to its end, then the bond
+	master.StartVampireFeed(target)
+	Utility.Wait(1.0)
+	float t = 0.0
+	While t < 12.0 && (master.GetAnimationVariableBool("bIsSynced") || target.GetAnimationVariableBool("bIsSynced"))
+		Utility.Wait(0.25)
+		t += 0.25
+	EndWhile
+	If t == 0.0
+		Utility.Wait(3.0) ; no sync flag to watch: give the bite its usual length
 	EndIf
 	Return Bind(target, master)
 EndFunction
@@ -216,6 +223,9 @@ EndFunction
 ; the dead a Vampire Lord can raise as a thrall (MCM): people, not creatures or children
 bool Function CanRaise(Actor target) Global
 	Keyword npc = Game.GetFormFromFile(0x013794, "Skyrim.esm") as Keyword ; ActorTypeNPC
+	If target && StorageUtil.GetIntValue(target, "COV_Ashes") == 1
+		Return False ; a pile of ash: nothing left to raise
+	EndIf
 	Return COV_Config.B("bRaiseDead:Thralls") && target && target.IsDead() && !target.IsChild() && npc && target.HasKeyword(npc)
 EndFunction
 
@@ -242,6 +252,7 @@ Function Raise(Actor master, Actor target) Global
 	Utility.Wait(1.5)
 	If !target.IsDead()
 		target.RestoreActorValue("Health", 10000.0)
+		StorageUtil.SetIntValue(target, "COV_Raised", 1) ; their life is lent by the bond (Release)
 		COV_Config.Log(master.GetDisplayName() + " raised " + target.GetDisplayName() + " from the dead")
 	EndIf
 EndFunction
@@ -624,6 +635,8 @@ EndFunction
 
 string Function Release(Actor target) Global
 	string who = target.GetDisplayName()
+	bool raised = StorageUtil.GetIntValue(target, "COV_Raised") == 1
+	StorageUtil.UnsetIntValue(target, "COV_Raised")
 	; the server keeps this for good: the freed one remembers having been a thrall
 	COV_Events.SendState("released|" + COV_Config.Name(who) + "=" + COV_Config.Name(StorageUtil.GetStringValue(target, "COV_ThrallMaster")))
 	StorageUtil.FormListRemove(None, "COV_Thralls", target, True)
@@ -648,11 +661,56 @@ string Function Release(Actor target) Global
 	StorageUtil.UnsetFloatValue(target, "COV_ThrallAggression")
 	StorageUtil.UnsetIntValue(target, "COV_ThrallTeammate")
 	SendThralls()
+	If raised && COV_Config.B("bRaisedDie:Thralls")
+		; raised from the dead: the life the bond lent them goes with it
+		bool ash = ReturnToDeath(target)
+		string how = " is released, and the life the bond lent them is gone: they are dead again"
+		string fell = " fell dead again the moment it was broken"
+		If ash
+			how += " and crumble to ash"
+			fell += " and crumbled to ash"
+		EndIf
+		COV_Config.Note(who + how)
+		If COV_Config.B("bEnabled:General")
+			AIAgentFunctions.requestMessage("(" + who + " was released from the thrall. Raised from the dead by the bond, " + who + fell + ")", "cov_thrall")
+		EndIf
+		Return who + how
+	EndIf
 	COV_Config.Note(who + " is free again")
 	If COV_Config.B("bEnabled:General")
 		AIAgentFunctions.requestMessage("(" + who + " was released from the thrall and has their own will again)", "cov_thrall")
 	EndIf
 	Return who + " is released and has their own will again"
+EndFunction
+
+; A released thrall who was raised from the dead dies again. With MCM bRaisedAsh they go the way
+; of the game's own reanimated dead: the body crumbles to a pile of ash that cannot be raised
+; again (the steps of the vanilla magicAttachAshPileOnDying). True when they became ash.
+bool Function ReturnToDeath(Actor a) Global
+	bool ash = COV_Config.B("bRaisedAsh:Thralls")
+	EffectShader fx = Game.GetFormFromFile(0x08C1A9, "Skyrim.esm") as EffectShader ; TurnUnDisintegrate01FXS
+	Form pile = Game.GetFormFromFile(0x00001B, "Skyrim.esm")                       ; DefaultAshPile1 (ACTI)
+	a.Kill()
+	If !a.IsDead()
+		a.KillEssential() ; essential people too: their life was only lent
+	EndIf
+	If !ash || !pile
+		Return False
+	EndIf
+	a.SetCriticalStage(3) ; CritStage_DisintegrateStart
+	If fx
+		fx.Play(a, 0.0)
+	EndIf
+	Utility.Wait(0.75)
+	a.AttachAshPile(pile)
+	Utility.Wait(1.65)
+	If fx
+		fx.Stop(a)
+	EndIf
+	a.SetAlpha(0.0, True)
+	a.SetCriticalStage(4) ; CritStage_DisintegrateEnd
+	StorageUtil.SetIntValue(a, "COV_Ashes", 1)
+	Return True
 EndFunction
 
 ; "thralls|Name=Master,Name2=Master2" (or "thralls|-" when there are none) for the server
