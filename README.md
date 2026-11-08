@@ -82,7 +82,7 @@ through MCM Helper in 12 languages with English fallback.
 | **CHIM OStim Bridge** | AI agents start, change and end OStim scenes; reactions, talk and cries of passion during scenes; needs. Had this mod's vampire features until 1.x. | [Nexus](https://www.nexusmods.com/skyrimspecialedition/mods/194761) · [GitHub](https://github.com/SimpleL97/CHIM-OStim-Bridge) |
 | **CHIM ORomance Bridge** | love, partners and marriage (several spouses) through ORomance Plus, married life, children with Fertility Mode | [Nexus](https://www.nexusmods.com/skyrimspecialedition/mods/198436) · [GitHub](https://github.com/SimpleL97/CHIM-ORomance-Bridge) |
 | **CHIM Vampire Bridge** (this one) | vampires: blood thirst, the bite, Vampire Lords, thralls who obey | [Nexus](https://www.nexusmods.com/skyrimspecialedition/mods/198441) · [GitHub](https://github.com/SimpleL97/CHIM-Vampire-Bridge) |
-| **CHIM Travel Fix** | Travel_To goes to the place the agent named, in any game language, not a random one; a thrall sent "to my house" walks there | [GitHub](https://github.com/SimpleL97/CHIM-Travel-Fix) (Nexus later) |
+| **CHIM Travel Fix** | Travel_To goes to the place the agent named, in any game language, not a random one; a thrall sent "to my house" walks there | [Nexus](https://www.nexusmods.com/skyrimspecialedition/mods/198442) · [GitHub](https://github.com/SimpleL97/CHIM-Travel-Fix) |
 
 Each works on its own, and none needs another. Installed together, they see each other:
 - with CHIM OStim Bridge, a thrall can be undressed and brought into OStim scenes by name,

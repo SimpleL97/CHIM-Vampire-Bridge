@@ -134,7 +134,7 @@ Each mod works on its own; installed together they see each other:
   and children through ORomance Plus.
 What happens in one mod (a thrall bound, an NPC turned, a wedding, a scene) reaches
 every AI agent nearby, so they can talk about it.
-- CHIM Travel Fix (github.com/SimpleL97/CHIM-Travel-Fix): not connected to this
+- CHIM Travel Fix (Nexus 198442, github.com/SimpleL97/CHIM-Travel-Fix): not connected to this
   mod - CHIM's own Travel_To goes to the place the agent named, in any game
   language, instead of a random one: a thrall sent to your house walks there.
 
