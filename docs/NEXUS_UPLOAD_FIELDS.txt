@@ -3,6 +3,7 @@ CHIM Vampire Bridge - values for the Nexus Mods upload form
 
 MOD PAGE
   Name:            CHIM Vampire Bridge
+  Page:            https://www.nexusmods.com/skyrimspecialedition/mods/198441
   Author:          SaurOff
   Version:         1.0.0
   Category:        Gameplay   (adult content is a flag, see below)
