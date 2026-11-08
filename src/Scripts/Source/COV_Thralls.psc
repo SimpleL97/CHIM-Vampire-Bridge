@@ -248,9 +248,25 @@ Function Raise(Actor master, Actor target) Global
 		glow.Play(target, 5.0)
 	EndIf
 	Utility.Wait(2.0)
-	target.Resurrect()
-	Utility.Wait(1.5)
-	If !target.IsDead()
+	; the game can take a while to bring a body back (a busy fight, a body still settling),
+	; and sometimes ignores the first call: wait for it, then try once more
+	int tries = 0
+	While target.IsDead() && tries < 2
+		target.Resurrect()
+		float t = 0.0
+		While target.IsDead() && t < 4.0
+			Utility.Wait(0.25)
+			t += 0.25
+		EndWhile
+		tries += 1
+	EndWhile
+	If target.IsDead()
+		string race = ""
+		If target.GetRace()
+			race = target.GetRace().GetName()
+		EndIf
+		COV_Config.Log(target.GetDisplayName() + " did not rise: disabled=" + target.IsDisabled() + " loaded=" + target.Is3DLoaded() + " race=" + race + " distance=" + (target.GetDistance(p) as int) + " protected=" + StorageUtil.GetIntValue(target, "COV_Protected") + " ash=" + StorageUtil.GetIntValue(target, "COV_Ashes"))
+	Else
 		target.RestoreActorValue("Health", 10000.0)
 		StorageUtil.SetIntValue(target, "COV_Raised", 1) ; their life is lent by the bond (Release)
 		COV_Config.Log(master.GetDisplayName() + " raised " + target.GetDisplayName() + " from the dead")
