@@ -54,10 +54,11 @@ $GLOBALS["COV_ACTIONS"] = [
         "return" => "#HERIKA_NAME# sets a thrall to a task.",
         "params" => [
             "target" => "The thrall(s) by exact name, several separated by commas; leave empty if you are the thrall yourself.",
-            "item" => "The task: follow (follow #PLAYER_NAME#), stay (stay here), guard (stay and guard this place), serve (bring #PLAYER_NAME# a meal and a drink), carry (hand over what they carry), free (back to their own day).",
+            "item" => "The task: follow (follow #PLAYER_NAME#), stay (stay here - also \"stop\", \"stop walking\", even when already on the way somewhere), guard (stay and guard this place), serve (bring #PLAYER_NAME# a meal and a drink), carry (hand over what they carry), free (back to their own day). One of these words, in English.",
         ],
         "description" => "Put a thrall to work: when #PLAYER_NAME# (or you as their master) orders a thrall to follow, stay or guard a place, serve a meal, or carry things - or as a thrall, when you are ordered so yourself. "
-            . "Saying \"yes, I will stay\" does nothing in the game - call this action in that same reply.",
+            . "Saying \"yes, I will stay\" does nothing in the game - call this action in that same reply. "
+            . "Sending a thrall to another place (a city, a house) is not a task: that is Travel_To.",
     ],
     "ExtCmdCOV_LordForm" => [
         "name" => "Take_Vampire_Lord_Form",

@@ -24,7 +24,9 @@ EndFunction
 ; the task asked for, in one word ("" = not known)
 string Function TaskWord(string what) Global
 	string w = what
-	If StringUtil.Find(w, "follow") > -1 || StringUtil.Find(w, "come") > -1
+	If StringUtil.Find(w, "stop") > -1 || StringUtil.Find(w, "halt") > -1 || StringUtil.Find(w, "stand") > -1
+		Return "stay" ; "stop", "stop following", "stand still": they stay where they are
+	ElseIf StringUtil.Find(w, "follow") > -1 || StringUtil.Find(w, "come") > -1
 		Return "follow"
 	ElseIf StringUtil.Find(w, "guard") > -1
 		Return "guard"
@@ -55,6 +57,7 @@ string Function Task(Actor thrall, string what) Global
 		Return who + " holds out what they carry for " + p.GetDisplayName()
 	EndIf
 	ClearTask(thrall)
+	StopChimMove(thrall)
 	If task == "follow"
 		ActorUtil.AddPackageOverride(thrall, FollowPackage(), 90)
 		StorageUtil.SetStringValue(thrall, "COV_ThrallTask", task)
@@ -80,6 +83,45 @@ Function ClearTask(Actor thrall) Global
 		ActorUtil.RemovePackageOverride(thrall, StayPackage())
 		StorageUtil.UnsetStringValue(thrall, "COV_ThrallTask")
 		thrall.EvaluatePackage()
+	EndIf
+EndFunction
+
+; A new task ends a walk CHIM sent the thrall on (Travel_To, Move_To, Wait): CHIM's travel
+; package sits at priority 100 over ours (90), so "stay" did nothing while they walked off.
+; Only CHIM's own factions and packages of AIAgent.esp are taken off.
+Function StopChimMove(Actor thrall) Global
+	If !Game.IsPluginInstalled("AIAgent.esp")
+		Return
+	EndIf
+	int[] factions = new int[4]
+	factions[0] = 0x01A69C ; TravelTo
+	factions[1] = 0x01A69B ; MoveToTarget
+	factions[2] = 0x02021E ; WaitFaction
+	factions[3] = 0x021246 ; sandboxFaction
+	bool moving = False
+	int i = 0
+	While i < factions.Length
+		Faction f = Game.GetFormFromFile(factions[i], "AIAgent.esp") as Faction
+		If f && thrall.IsInFaction(f)
+			thrall.RemoveFromFaction(f)
+			moving = True
+		EndIf
+		i += 1
+	EndWhile
+	int[] packages = new int[3]
+	packages[0] = 0x01ABFE ; Travelto
+	packages[1] = 0x040BE6 ; sandboxWorkPackage (where a walk ends)
+	packages[2] = 0x02021F ; WaitPackage
+	i = 0
+	While i < packages.Length
+		Package pk = Game.GetFormFromFile(packages[i], "AIAgent.esp") as Package
+		If pk
+			ActorUtil.RemovePackageOverride(thrall, pk)
+		EndIf
+		i += 1
+	EndWhile
+	If moving
+		COV_Config.Log(thrall.GetDisplayName() + ": CHIM's walk or wait taken off for the new task")
 	EndIf
 EndFunction
 

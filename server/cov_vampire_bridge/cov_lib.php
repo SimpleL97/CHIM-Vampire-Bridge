@@ -298,7 +298,8 @@ function covThrallPromptFor(string $npc): string
     $tasks = !empty($cfg["tasks"]) ? ($state["tasks"] ?? []) : [];
     if (!empty($cfg["tasks"]) && isset($thralls[$npc])) {
         $lines[] = (isset($tasks[$npc]) ? "Your standing task now: " . $tasks[$npc] . ". " : "")
-            . "When you are ordered to follow, stay, guard a place, serve a meal or carry things, call Thrall_Task with that task in item (target empty for yourself) in that same reply.";
+            . "When you are ordered to follow, stay, guard a place, serve a meal or carry things, call Thrall_Task with that task in item (target empty for yourself) in that same reply. "
+            . "Told to stop, wait or stay - also while you are walking somewhere you were sent - that is Thrall_Task stay: \"I stay\" without it, and you keep walking.";
     }
     if ($mine) {
         $lines[] = "Your thralls, bound by your bite: " . implode(", ", $mine) . ". They obey you and {$player} in everything.";
