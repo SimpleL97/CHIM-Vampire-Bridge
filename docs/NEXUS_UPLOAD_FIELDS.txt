@@ -1,0 +1,51 @@
+CHIM Vampire Bridge - values for the Nexus Mods upload form
+============================================================
+
+MOD PAGE
+  Name:            CHIM Vampire Bridge
+  Author:          SaurOff
+  Version:         1.0.0
+  Category:        Gameplay   (adult content is a flag, see below)
+  Adult content:   YES - only together with CHIM OStim Bridge (thralls in scenes); flag it to be safe
+  Language:        English
+  Brief overview (max 350 characters):
+    Vampires for CHIM AI NPCs: blood thirst, the bite passes on vampirism, Vampire Lords turn you the Dawnguard way, and Lords and the Volkihar court bind thralls who obey - enemies taken alive, sleepers, the dead raised. Feed on thralls standing. The vampire features of CHIM OStim Bridge 1.x, extended. MCM in 12 languages.
+  Description:     paste NEXUS_DESCRIPTION.bbcode.txt (BBCode editor)
+  Main image:      art/banner.png (1920x1080)
+
+REQUIREMENTS (Nexus "Requirements" tab, Nexus mods)
+  CHIM                              126330   game plugin and server
+  PapyrusUtil SE/AE                 13048
+  SkyUI                             12604
+  MCM Helper                        53000
+  Address Library for SKSE Plugins  32444
+  Surrender                         139522   note: "Optional - kneeling enemies become captives to bind"
+  CHIM OStim Bridge                 194761   note: "Optional - my other mod: thralls in OStim scenes"
+Off-site requirement
+  SKSE64                            https://skse.silverlock.org/
+DLC requirement
+  Dawnguard
+
+On CHIM OStim Bridge's page (194761) add a line linking here: its vampire features moved to
+this mod in 2.0.
+
+FILE UPLOAD
+  File:            CHIM Vampire Bridge.zip   (older versions: archive/CHIM Vampire Bridge-<version>.zip)
+  File name:       CHIM Vampire Bridge
+  Version:         1.0.0   (must match fomod/info.xml; Vortex shows and tracks versions from this)
+  Category:        Main Files
+  Description:     First release. FOMOD installer; the CHIM server plugin installs itself at game start. Takes over the vampire state of CHIM OStim Bridge 1.x.
+
+AFTER THE FIRST UPLOAD
+  Put the mod id (from the page address) and the file id (from the main file's download link)
+  into MOD_ID / FILE_ID in .github/workflows/release.yml: from then on a GitHub release is
+  uploaded to Nexus as a new version of that file by itself.
+
+PERMISSIONS (suggested, as for CHIM OStim Bridge)
+  Upload to other sites:   ask first
+  Modify and re-release:   ask first
+  Use assets in your mods: credit SaurOff
+  Convert to other games:  no
+  Donation points:         your choice
+
+TAGS (suggested): AI, CHIM, Vampires, Vampire Lord, Thralls, Followers, Immersion, MCM, Dialogue
