@@ -130,7 +130,7 @@ Each mod works on its own; installed together they see each other:
 - CHIM OStim Bridge (Nexus 194761, github.com/SimpleL97/CHIM-OStim-Bridge): a
   thrall can be undressed, dressed and brought into OStim scenes by name - also a
   thrall who is not an AI agent and cannot answer.
-- CHIM ORomance Bridge (github.com/SimpleL97/CHIM-ORomance-Bridge): love, marriage
+- CHIM ORomance Bridge (Nexus 198436, github.com/SimpleL97/CHIM-ORomance-Bridge): love, marriage
   and children through ORomance Plus.
 What happens in one mod (a thrall bound, an NPC turned, a wedding, a scene) reaches
 every AI agent nearby, so they can talk about it.

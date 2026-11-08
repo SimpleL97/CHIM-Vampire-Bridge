@@ -81,7 +81,7 @@ through MCM Helper in 12 languages with English fallback.
 | Mod | What it adds | Get it |
 |---|---|---|
 | **CHIM OStim Bridge** | AI agents start, change and end OStim scenes; reactions, talk and cries of passion during scenes; needs. Had this mod's vampire features until 1.x. | [Nexus](https://www.nexusmods.com/skyrimspecialedition/mods/194761) · [GitHub](https://github.com/SimpleL97/CHIM-OStim-Bridge) |
-| **CHIM ORomance Bridge** | love, partners and marriage (several spouses) through ORomance Plus, married life, children with Fertility Mode | [GitHub](https://github.com/SimpleL97/CHIM-ORomance-Bridge) (Nexus later) |
+| **CHIM ORomance Bridge** | love, partners and marriage (several spouses) through ORomance Plus, married life, children with Fertility Mode | [Nexus](https://www.nexusmods.com/skyrimspecialedition/mods/198436) · [GitHub](https://github.com/SimpleL97/CHIM-ORomance-Bridge) |
 | **CHIM Vampire Bridge** (this one) | vampires: blood thirst, the bite, Vampire Lords, thralls who obey | [GitHub](https://github.com/SimpleL97/CHIM-Vampire-Bridge) (Nexus later) |
 | **CHIM Travel Fix** | Travel_To goes to the place the agent named, in any game language, not a random one; a thrall sent "to my house" walks there | [GitHub](https://github.com/SimpleL97/CHIM-Travel-Fix) (Nexus later) |
 
@@ -172,7 +172,7 @@ SkyUI, MCM Helper - see [DEPENDENCIES.md](DEPENDENCIES.md).
 
 Optional: **CHIM OStim Bridge** ([Nexus](https://www.nexusmods.com/skyrimspecialedition/mods/194761) ·
 [GitHub](https://github.com/SimpleL97/CHIM-OStim-Bridge)) - thralls in OStim scenes;
-**CHIM ORomance Bridge** ([GitHub](https://github.com/SimpleL97/CHIM-ORomance-Bridge)).
+**CHIM ORomance Bridge** ([Nexus](https://www.nexusmods.com/skyrimspecialedition/mods/198436) · [GitHub](https://github.com/SimpleL97/CHIM-ORomance-Bridge)).
 
 Install the release archive with Vortex or MO2, start the CHIM server, then the game.
 More in [docs/README.txt](docs/README.txt).

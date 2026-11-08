@@ -23,7 +23,7 @@ Built the same way, by the same author, and tested together with this one.
 | Mod | What works together |
 |---|---|
 | **CHIM OStim Bridge** ([Nexus](https://www.nexusmods.com/skyrimspecialedition/mods/194761) · [GitHub](https://github.com/SimpleL97/CHIM-OStim-Bridge)) | Reads this mod's StorageUtil list `COV_Thralls`, so a thrall can be undressed, dressed and brought into OStim scenes by name - also a thrall who is not an AI agent; the thrall prompt here mentions that only when it is installed. |
-| **CHIM ORomance Bridge** ([GitHub](https://github.com/SimpleL97/CHIM-ORomance-Bridge)) | Love, marriage and children through ORomance Plus; weddings, pregnancies and births reach the agents here, and a thrall bound or an NPC turned reaches the agents there. |
+| **CHIM ORomance Bridge** ([Nexus](https://www.nexusmods.com/skyrimspecialedition/mods/198436) · [GitHub](https://github.com/SimpleL97/CHIM-ORomance-Bridge)) | Love, marriage and children through ORomance Plus; weddings, pregnancies and births reach the agents here, and a thrall bound or an NPC turned reaches the agents there. |
 | **CHIM Travel Fix** ([GitHub](https://github.com/SimpleL97/CHIM-Travel-Fix)) | Not connected to this mod: a CHIM server plugin that makes CHIM's own Travel_To go to the place the agent named, in any game language, instead of a random one - a thrall sent to "my house in Whiterun" walks there. |
 
 None of them is required and none requires another; each works on its own. Installed together they

@@ -50,7 +50,7 @@ The MCM is translated into English, Russian, Ukrainian, German, French, Spanish,
 Each works on its own; installed together they see each other - what happens in one (a scene, a wedding, a pregnancy, a thrall) reaches every AI agent nearby.
 [list]
 [*][b]CHIM OStim Bridge[/b] - [url=https://www.nexusmods.com/skyrimspecialedition/mods/194761]Nexus[/url] · [url=https://github.com/SimpleL97/CHIM-OStim-Bridge]GitHub[/url]. AI agents start, change and end OStim scenes; reactions, talk and cries of passion during scenes; needs.
-[*][b]CHIM ORomance Bridge[/b] - [url=https://github.com/SimpleL97/CHIM-ORomance-Bridge]GitHub[/url]. Love, marriage (several spouses) and children through ORomance Plus.
+[*][b]CHIM ORomance Bridge[/b] - [url=https://www.nexusmods.com/skyrimspecialedition/mods/198436]Nexus[/url] · [url=https://github.com/SimpleL97/CHIM-ORomance-Bridge]GitHub[/url]. Love, marriage (several spouses) and children through ORomance Plus.
 [*][b]CHIM Travel Fix[/b] - [url=https://github.com/SimpleL97/CHIM-Travel-Fix]GitHub[/url]. CHIM's Travel_To goes to the place the agent named, in any game language - a thrall sent to your house walks there instead of into a random cave.
 [/list]
 
