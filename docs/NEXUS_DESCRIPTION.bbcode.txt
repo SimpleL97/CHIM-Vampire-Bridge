@@ -5,7 +5,7 @@
 [size=4][b]What is this?[/b][/size]
 [url=https://www.nexusmods.com/skyrimspecialedition/mods/126330]CHIM[/url] gives NPCs a mind and a voice. This mod gives its vampires their nature. Vampire agents thirst for blood and feed when they choose. Their bite can pass on Sanguinare Vampiris. Vampire Lords turn you into one the way Dawnguard does. The Vampire Lords and the Volkihar court bind thralls who obey them and you in everything: enemies taken alive, sleepers, even the dead. Everything is configured in the MCM, and the server side installs itself.
 
-[b]Coming from CHIM OStim Bridge 1.x?[/b] These were its features until 1.2. In CHIM OStim Bridge 2.0 they are removed and live here, much extended. Install this mod and update CHIM OStim Bridge: your bitten, turned and thrall NPCs, the vampire state on the CHIM server and the actions (same names) move over by themselves.
+[b]Coming from [url=https://www.nexusmods.com/skyrimspecialedition/mods/194761]CHIM OStim Bridge[/url] 1.x?[/b] These were its features until 1.2. In CHIM OStim Bridge 2.0 they are removed and live here, much extended. Install this mod and update CHIM OStim Bridge: your bitten, turned and thrall NPCs, the vampire state on the CHIM server and the actions (same names) move over by themselves.
 
 [size=4][b]Features[/b][/size]
 [b]AI actions[/b] (appear in CHIM's action list)

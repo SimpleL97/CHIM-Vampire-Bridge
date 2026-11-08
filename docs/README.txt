@@ -6,8 +6,9 @@ bite, Vampire Lords turn you into a Vampire Lord the way Dawnguard does, and the
 Vampire Lords and the Volkihar court bind thralls who obey them and you in
 everything. Everything is configured in the MCM.
 
-Until version 1.2 these features were part of my CHIM OStim Bridge; they live here
-now. Both mods work on their own and work together (see TOGETHER WITH MY OTHER MODS).
+Until version 1.2 these features were part of my CHIM OStim Bridge (Nexus 194761);
+they live here now. Both mods work on their own and work together (see TOGETHER
+WITH MY OTHER MODS).
 
 
 REQUIREMENTS
