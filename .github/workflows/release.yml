@@ -5,8 +5,10 @@
 # the run's artifact "CHIM Vampire Bridge" - download it from the run to test a build.
 #
 # Publishing a GitHub release from a tag (v1.0.0): the tagged commit is built the same
-# way, its version must match the tag, and the archive is attached to the release.
-# Actions -> Run workflow with a tag attaches it again to an existing release.
+# way, its version must match the tag, the archive is attached to the release and - once
+# MOD_ID / FILE_ID below are set - uploaded to Nexus Mods as a new version of the main file
+# (the previous one moves to "Old versions", the release text becomes the changelog).
+# Actions -> Run workflow with a tag publishes an existing release again.
 # (Uploading to Nexus Mods is added once the mod's first file is on Nexus: the upload
 # adds versions to an existing file and needs its file ID.)
 #
@@ -25,13 +27,19 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Attach the build to an existing release, e.g. v1.0.0 (empty: only build)"
+        description: "Publish an existing release again, e.g. v1.0.0 (empty: only build)"
         required: false
 
 permissions:
   contents: read
 
 env:
+  # Nexus Mods: fill in once the mod page exists and its first main file is uploaded by hand
+  # (the mod id is in the page's address, the file id in the file's download link); until
+  # then a release is only attached on GitHub. Secret NEXUSMODS_API_KEY (environment "Nexus"
+  # or the repository's secrets): personal API key from nexusmods.com/settings/api-keys.
+  MOD_ID: ""
+  FILE_ID: ""
   ARCHIVE: "dist/CHIM Vampire Bridge.zip"
   # papyrus-compiler master with the string escape fix (issue 19), after release 0.0.4
   PAPYRUS_COMPILER_COMMIT: b9dc9951f4264084c8ded6721b20f0d81c021d58
@@ -95,10 +103,11 @@ jobs:
           path: ${{ env.ARCHIVE }}
           if-no-files-found: error
 
-  release:
+  publish:
     needs: build
     if: needs.build.outputs.tag != ''
     runs-on: ubuntu-latest
+    environment: Nexus
     permissions:
       contents: write  # attach the archive to the release
     steps:
@@ -112,3 +121,52 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release upload "${{ needs.build.outputs.tag }}" "$ARCHIVE" --repo "$GITHUB_REPOSITORY" --clobber
+
+      - name: Is there a Nexus page yet
+        id: nexus
+        run: |
+          if [ -n "$MOD_ID" ] && [ -n "$FILE_ID" ]; then
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::MOD_ID and FILE_ID are not set in this workflow yet - not uploaded to Nexus Mods; the GitHub release has the archive"
+          fi
+
+      - name: Release notes as the Nexus changelog
+        id: notes
+        if: steps.nexus.outputs.go == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BODY=$(gh release view "${{ needs.build.outputs.tag }}" --repo "$GITHUB_REPOSITORY" --json body --jq .body)
+          # plain lines for Nexus: no markdown headings, bold or links
+          CLEAN=$(printf '%s\n' "$BODY" | sed -E 's/^#+ *//; s/\*\*//g; s/\[([^]]*)\]\([^)]*\)/\1/g')
+          {
+            echo "changelog<<CHANGELOG_EOF"
+            printf '%s\n' "$CLEAN"
+            echo "CHANGELOG_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Version for Nexus
+        id: version
+        if: steps.nexus.outputs.go == 'true'
+        run: |
+          TAG="${{ needs.build.outputs.tag }}"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload to Nexus Mods
+        if: steps.nexus.outputs.go == 'true'
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.11
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          mod_id: ${{ env.MOD_ID }}
+          file_id: ${{ env.FILE_ID }}
+          filename: ${{ env.ARCHIVE }}
+          version: ${{ steps.version.outputs.version }}
+          display_name: CHIM Vampire Bridge
+          description: "FOMOD installer; the CHIM server plugin installs and updates itself at game start. Source and build instructions: https://github.com/SimpleL97/CHIM-Vampire-Bridge"
+          category: main
+          archive_existing_version: true
+          update_mod_version: true
+          primary_mod_manager_download: true
+          allow_mod_manager_download: true
+          changelog: ${{ steps.notes.outputs.changelog }}
