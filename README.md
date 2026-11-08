@@ -8,18 +8,25 @@ Vampire Lords turn the player into a Vampire Lord the way Dawnguard does, and th
 Vampire Lords and the Volkihar court bind thralls who obey them and the player in
 everything - enemies too, taken alive.
 
-Until its version 1.2 these features were part of my **CHIM OStim Bridge**
+**Where it comes from.** These features were part of my **CHIM OStim Bridge**
 ([Nexus](https://www.nexusmods.com/skyrimspecialedition/mods/194761) ·
-[GitHub](https://github.com/SimpleL97/CHIM-OStim-Bridge)); now each has its own mod.
-Both, and **CHIM ORomance Bridge** ([GitHub](https://github.com/SimpleL97/CHIM-ORomance-Bridge)),
-work on their own and see each other when installed together: with CHIM OStim Bridge a
-thrall can be undressed and brought into OStim scenes by name.
+[GitHub](https://github.com/SimpleL97/CHIM-OStim-Bridge)):
+- blood thirst, the bite, Sanguinare Vampiris and Vampire Lords came out in its 1.1.0;
+- the thralls were being made for its 1.2.
+
+In CHIM OStim Bridge 2.0 all of them are **removed** and live here, much extended; that mod
+has no vampire actions or settings any more. Coming from CHIM OStim Bridge 1.x, install this
+mod and update that one to 2.0. This mod moves over the bitten, turned and thrall NPCs of
+your save, the vampire state on the CHIM server, and the actions (same names) by itself.
+
+> **Status: 1.0.0 is in development and not released yet**, on Nexus or as a GitHub
+> release. The same goes for CHIM OStim Bridge 2.0.
 
 > **Adult content.** Together with CHIM OStim Bridge this mod deals with sexual content
 > in a video game and is meant for adults only.
 
-This repository is the complete source of the mod. Players should download the packaged
-release (FOMOD archive) instead of building it.
+This repository is the complete source of the mod. Once it is released, players should
+download the packaged release (FOMOD archive) instead of building it.
 
 - **[BUILDING.md](BUILDING.md)** - how to build the release from these sources
 - **[DEPENDENCIES.md](DEPENDENCIES.md)** - every requirement and what it is used for
@@ -28,26 +35,70 @@ release (FOMOD archive) instead of building it.
 
 ## What it does
 
-- **AI actions** added to CHIM's action list: `Feed_On_Blood`, `Turn_Into_Vampire_Lord`
-  (Dawnguard's own steps: the bite, the vampire change, the Vampire Lord power and perk
-  tree), `Enthrall` / `Release_Thrall`, `Spare` (companions take enemies alive - one by
-  name, or women / men / everyone as a standing order; the nearest Vampire Lord hears
-  when one is beaten down and can bind them). Every result is reported back to the AI,
-  so a refusal is answered in character.
-- **Blood thirst** for real game vampires, NPCs turned by a bite and the names in the MCM.
-- **Vampirism by bite**: the game's Sanguinare Vampiris; an NPC not cured in time is a
-  vampire from then on.
-- **Thralls**: Vampire Lords (Dawnguard's own and the names in the MCM), the Volkihar
-  court and the names in the MCM bind thralls; the player gets the lesser power
-  "Vampire's Thrall" (shout key) once they are a Vampire Lord: it raises the dead as
-  thralls (not the living), and sleeping people get "Make your thrall" next to Feed
-  (E). Both are MCM switches. Thralls of living blood are fed on like Castle
-  Volkihar's (E, standing: Talk or Feed), and thirsty Vampire Lord companions drink
-  from them; no feeding on undead, spirits or summoned beings. Thralls obey, released
-  thralls remember. Vampire Lords (the player too) raise the dead as thralls, alive and
-  whole; "turn the women into thralls" has them bind every spared enemy who is down.
-- **Notifications and a log file** in the game and on the CHIM server.
-- **MCM** through MCM Helper, translated into 12 languages with English fallback.
+**AI actions** added to CHIM's action list (each can be switched off there):
+
+| Action | Who | What it does |
+|---|---|---|
+| `Feed_On_Blood` | vampires (game vampires, NPCs turned by a bite, names in the MCM) | bites someone present after the line announcing it; can pass on Sanguinare Vampiris |
+| `Turn_Into_Vampire_Lord` | Vampire Lords | turns the player into a Vampire Lord through Dawnguard's own steps: the bite, the vampire change, the Vampire Lord power and perk tree |
+| `Enthrall` | Vampire Lords, the Volkihar court, names in the MCM | binds someone's will, enemies too and even mid-fight; on a dead body it raises them alive and whole as a thrall |
+| `Release_Thrall` | the master | sets a thrall free; they remember having been one |
+| `Thrall_Task` | masters, and thralls themselves | follow, stay or guard a place, serve a meal and a drink, hand over what they carry, back to their own day. "Stop" also ends a walk CHIM sent them on. |
+| `Take_Vampire_Lord_Form` | Vampire Lords | the winged form and back; at your side in a hard fight they take it by themselves |
+| `Spare` | companions | take enemies alive: by name, or "women" / "men" / "everyone" as a standing order for this fight and the next. "Turn the women into thralls" has the nearest Vampire Lord bind every one who is down. |
+
+Every result is reported back to the AI, so a refusal is answered at once and in character.
+
+**Vampires**
+- **Blood thirst:** game vampires, NPCs turned by a bite and the names in the MCM get
+  thirsty, then starving.
+- **Vampirism by bite:** the game's Sanguinare Vampiris (MCM chance). An NPC not cured in
+  time is a vampire from then on; the player turns after the game's 3 days.
+- **Vampire Lords:** Dawnguard's own, anyone in Vampire Lord form, and the names in the MCM.
+
+**Thralls**
+- Thralls obey their master and you in everything. AI agents who are thralls answer and
+  act as thralls, others know who obeys whom, and released thralls remember.
+- **Raising the dead:** Vampire Lords, the player too, raise the dead as thralls, alive
+  and whole, with the Vampire Lord's reanimation glow. A raised thrall lives only by the
+  bond: released, they fall dead again, and with a second switch they crumble to ash and
+  can never be raised again (MCM).
+- **For a Vampire Lord player:**
+  - the lesser power "Vampire's Thrall" (shout key) raises a dead body as your thrall;
+  - on a sleeping person, "Make your thrall" sits next to Feed (E), a bite in the game's
+    own feeding animation.
+- **Feeding on thralls:** a thrall of living blood is fed on like Castle Volkihar's (E,
+  standing: Talk or Feed). Thirsty Vampire Lord companions drink from them too. Nobody
+  feeds on the undead, spirits, summoned beings, vampires or children.
+- **Captives:** with the mod Surrender, an enemy kneeling in surrender is a captive the
+  nearest Vampire Lord can bind.
+
+**Also:** notifications and a log file in the game and on the CHIM server, and an MCM
+through MCM Helper in 12 languages with English fallback.
+
+## My CHIM mods
+
+| Mod | What it adds | Get it |
+|---|---|---|
+| **CHIM OStim Bridge** | AI agents start, change and end OStim scenes; reactions, talk and cries of passion during scenes; needs. Had this mod's vampire features until 1.x. | [Nexus](https://www.nexusmods.com/skyrimspecialedition/mods/194761) · [GitHub](https://github.com/SimpleL97/CHIM-OStim-Bridge) |
+| **CHIM ORomance Bridge** | love, partners and marriage (several spouses) through ORomance Plus, married life, children with Fertility Mode | [GitHub](https://github.com/SimpleL97/CHIM-ORomance-Bridge) (Nexus later) |
+| **CHIM Vampire Bridge** (this one) | vampires: blood thirst, the bite, Vampire Lords, thralls who obey | [GitHub](https://github.com/SimpleL97/CHIM-Vampire-Bridge) (Nexus later) |
+| **CHIM Travel Fix** | Travel_To goes to the place the agent named, in any game language, not a random one; a thrall sent "to my house" walks there | [GitHub](https://github.com/SimpleL97/CHIM-Travel-Fix) (Nexus later) |
+
+Each works on its own, and none needs another. Installed together, they see each other:
+- with CHIM OStim Bridge, a thrall can be undressed and brought into OStim scenes by name,
+  even one who is not an AI agent;
+- a thrall bound, an NPC turned, a wedding or a scene reaches every AI agent nearby.
+
+## Supported mods
+
+| Mod | | |
+|---|---|---|
+| [CHIM](https://www.nexusmods.com/skyrimspecialedition/mods/126330) | required | plugin and server; tested with 3.4.2 |
+| Dawnguard | required | part of every SE/AE install |
+| [PapyrusUtil SE/AE](https://www.nexusmods.com/skyrimspecialedition/mods/13048), [SkyUI](https://www.nexusmods.com/skyrimspecialedition/mods/12604), [MCM Helper](https://www.nexusmods.com/skyrimspecialedition/mods/53000), [Address Library](https://www.nexusmods.com/skyrimspecialedition/mods/32444) | required | |
+| [Surrender](https://www.nexusmods.com/skyrimspecialedition/mods/139522) | optional | enemies kneeling in surrender become captives to bind |
+| [OStim Standalone](https://www.nexusmods.com/skyrimspecialedition/mods/98163) | optional | nobody is bitten or enthralled in the middle of a scene |
 
 ## How it works
 
@@ -86,7 +137,9 @@ when that plugin is installed and switched on.
 
 ```
 src/Scripts/Source/   Papyrus sources: COV (CHIM entry point), COV_Bridge, COV_Thralls,
-                      COV_Events, COV_MCM, COV_Config, COV_EnthrallEffect (lesser power)
+                      COV_Service (thrall tasks, Vampire Lord form), COV_Events, COV_MCM,
+                      COV_Config, COV_EnthrallEffect (lesser power),
+                      PRKF_COV_SleepThrallPerk ("Make your thrall" on sleepers)
 server/
   cov_vampire_bridge/  CHIM server plugin (PHP) - packaged into the .dwpkg
   *.bat, *.ps1          optional manual install / uninstall of the server plugin
