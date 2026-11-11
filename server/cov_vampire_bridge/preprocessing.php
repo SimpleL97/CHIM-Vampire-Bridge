@@ -4,7 +4,8 @@
  * CHIM Vampire Bridge by SaurOff - runs before CHIM logs a request or takes its lock.
  *
  *   funcret     a refused action of this bridge becomes the event cov_refused, which the
- *               agent answers at once (successful ones stay as they are).
+ *               agent answers at once (successful ones stay as they are); a name nobody
+ *               here has becomes an instruction to try once more with the right name.
  *   cov_downed  spared enemies lie beaten down: goes on as an instruction to the Vampire
  *               Lord the game sent it to (CHIM lets only instructions act, not events).
  *   cov_state   silent bookkeeping from COV_Events (config, vampires, lords, court,
@@ -19,8 +20,10 @@ if (isset($gameRequest) && is_array($gameRequest) && strval($gameRequest[0] ?? "
     try {
         $covRefusal = covRefusalEvent(strval($gameRequest[3] ?? ""));
         if ($covRefusal !== null) {
-            $gameRequest[0] = "cov_refused";
-            $gameRequest[3] = $covRefusal;
+            // a name nobody here has: one more try with the right name (covNameRetry)
+            $covRetry = covNameRetry(strval($gameRequest[3] ?? ""));
+            $gameRequest[0] = $covRetry !== null ? "instruction" : "cov_refused";
+            $gameRequest[3] = $covRetry ?? $covRefusal;
         }
     } catch (Throwable $e) {
         error_log("[cov_vampire_bridge] refusal: " . $e->getMessage());

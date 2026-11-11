@@ -88,7 +88,7 @@ Function Feed(String command, String parameter)
 	EndIf
 	Actor victim = ResolvePartner(parameter)
 	If !victim
-		Report(command, parameter, "cannot feed: " + ArgOf(parameter, 1) + " is not here")
+		Report(command, parameter, "cannot feed: nobody called " + ArgOf(parameter, 1) + " is here")
 		Return
 	EndIf
 	If victim == npc
@@ -269,7 +269,7 @@ Function ThrallAction(String command, String parameter)
 	; one name, several ("A, B"), or for Enthrall a group: "women", "the dead", "everyone"
 	Actor[] targets = TargetsOf(name, command == "ExtCmdCOV_Enthrall")
 	If !targets[0]
-		Report(command, parameter, "cannot: " + name + " is not here")
+		Report(command, parameter, "cannot: nobody called " + name + " is here")
 		Return
 	EndIf
 	If command == "ExtCmdCOV_Enthrall"
@@ -334,7 +334,7 @@ Function ThrallTask(String command, String parameter)
 		targets = TargetsOf(names, False)
 	EndIf
 	If !targets[0]
-		Report(command, parameter, "cannot: " + names + " is not here")
+		Report(command, parameter, "cannot: nobody called " + names + " is here")
 		Return
 	EndIf
 	String done = ""
@@ -537,7 +537,7 @@ Actor Function ResolvePartnerName(String name, bool allowDead = False)
 	EndIf
 	name = COV_Config.NameOf(name)
 	Actor player = Game.GetPlayer()
-	If name == "" || name == "player" || name == "self" || name == player.GetDisplayName()
+	If name == "" || COV_Config.IsPlayerWord(name) || COV_Config.NameScore(player, name) == 2
 		Return player
 	EndIf
 	Actor a = AIAgentFunctions.getAgentByName(name)
@@ -547,30 +547,47 @@ Actor Function ResolvePartnerName(String name, bool allowDead = False)
 	If a
 		Return a
 	EndIf
+	; anyone around: the same name first, then a looser fit (a title in front, the first
+	; name alone); the living before the dead
 	Actor[] around = MiscUtil.ScanCellNPCs(player, RangeUnits())
+	Actor[] dead
+	If allowDead
+		dead = MiscUtil.ScanCellNPCs(player, RangeUnits(), None, False)
+	EndIf
+	Int score = 2
+	While score > 0
+		a = Named(around, name, score, False)
+		If !a && allowDead
+			a = Named(dead, name, score, True)
+		EndIf
+		If a
+			Return a
+		EndIf
+		If score == 2 && COV_Config.NameScore(player, name) == 1
+			Return player
+		EndIf
+		score -= 1
+	EndWhile
+	; a name was given but nobody by that name is here: refuse rather than biting the player
+	Return None
+EndFunction
+
+; the nearest one in the list who goes by the name this well (COV_Config.NameScore),
+; living or (deadOnes) dead
+Actor Function Named(Actor[] list, String name, Int score, bool deadOnes)
+	Actor player = Game.GetPlayer()
+	Actor best = None
 	Int i = 0
-	While i < around.Length
-		If around[i] && !around[i].IsDead() && COV_Config.NameIs(around[i], name)
-			Return around[i]
+	While i < list.Length
+		Actor x = list[i]
+		If x && x != player && x.IsDead() == deadOnes && COV_Config.NameScore(x, name) == score
+			If !best || x.GetDistance(player) < best.GetDistance(player)
+				best = x
+			EndIf
 		EndIf
 		i += 1
 	EndWhile
-	If allowDead
-		Actor best = None
-		around = MiscUtil.ScanCellNPCs(player, RangeUnits(), None, False)
-		i = 0
-		While i < around.Length
-			If around[i] && around[i].IsDead() && COV_Config.NameIs(around[i], name) && (!best || around[i].GetDistance(player) < best.GetDistance(player))
-				best = around[i]
-			EndIf
-			i += 1
-		EndWhile
-		If best
-			Return best
-		EndIf
-	EndIf
-	; a name was given but nobody by that name is here: refuse rather than biting the player
-	Return None
+	Return best
 EndFunction
 
 float Function RangeUnits()

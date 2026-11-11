@@ -15,7 +15,7 @@
  * covPeer() says whether one is installed and switched on, and only reads its settings.
  */
 
-const COV_VERSION = "1.0.0";
+const COV_VERSION = "1.0.1";
 const COV_PLUGIN = "cov_vampire_bridge";
 const COV_CONFIG_KEY = "cov_vampire_bridge_config";
 const COV_STATE_KEY = "cov_vampire_bridge_state";
@@ -343,6 +343,157 @@ function covThrallPromptFor(string $npc): string
     return "THRALLS:\n- " . implode("\n- ", $lines);
 }
 
+// ---------------------------------------------------------------- names in a target
+
+/**
+ * The model writes the people of a target in many ways: as CHIM lists them to it ("Name
+ * [RefID: ...]", "Name [Bandit Defender]", "Jarl Name", "Name (busy)"), by the first name
+ * alone, misspelled, or the player as "The Narrator", "you", or under the name in CHIM's
+ * settings, which may not be the name in the game. The game only knows exact names, so all
+ * of these used to be refused as "is not here". covResolveTargets() turns each name into
+ * one of the people CHIM saw around the player last, "player" for the player, or the
+ * agent's own name for "me"; a name it cannot place stays as it was written.
+ */
+const COV_PLAYER_WORDS = [
+    "player", "the player", "you", "narrator", "the narrator", "thenarrator", "dragonborn",
+    "the dragonborn", "#player_name#", "player_name", "{player_name}", "игрок", "гравець",
+];
+const COV_SELF_WORDS = ["me", "myself", "i"];
+/** not names: the group words of Enthrall and Spare, and a task put into the target */
+const COV_NOT_A_NAME = '/\b(women|woman|men|man|everyone|everybody|all|nobody|none|thralls?|dead|females?|males?|enemies|enemy|hostile|lord|back|human|own|follow|stay|stop|wait|guard|serve|carry|free)\b/u';
+
+/** a name without RefID, "[...]", "(...)", quotes and case, for comparing */
+function covBareName(string $s): string
+{
+    $s = preg_replace('/\[[^\]]*\]|\([^)]*\)/u', ' ', $s);
+    $s = trim(preg_replace('/\s+/u', ' ', strval($s)), " \t\"'`«»“”„.!?:;");
+    return mb_strtolower($s);
+}
+
+/** the people CHIM saw around the player last (its infonpc and infonpc_close events), as CHIM writes them */
+function covPresentNames(): array
+{
+    static $names = null;
+    if ($names !== null) {
+        return $names;
+    }
+    $names = [];
+    $db = $GLOBALS["db"] ?? null;
+    if (!$db) {
+        return $names;
+    }
+    foreach (["infonpc", "infonpc_close"] as $type) {
+        $row = $db->fetchOne("SELECT data FROM eventlog WHERE type = $1 ORDER BY gamets DESC, ts DESC LIMIT 1", [$type]);
+        $data = !empty($row) ? strval($row["data"] ?? "") : "";
+        $data = preg_replace('/^\s*\(?\s*beings in range:\s*/iu', '', $data);
+        foreach (preg_split('/[,\/|]/u', strval($data)) as $v) {
+            $v = trim($v);
+            // the list itself ends with ")": "(beings in range:A,B,C)"
+            while ($v !== "" && substr($v, -1) === ")" && substr_count($v, "(") < substr_count($v, ")")) {
+                $v = trim(substr($v, 0, -1));
+            }
+            // a state after the name: "(far away)", "(busy)", "(dead)"
+            $v = trim(strval(preg_replace('/(\s*\([^()]*\))+$/u', '', $v)));
+            if ($v !== "" && covBareName($v) !== "" && !in_array($v, $names, true)) {
+                $names[] = $v;
+            }
+        }
+    }
+    return $names;
+}
+
+/**
+ * The one present person a name means, or null: the same name first; then a title in front
+ * of it ("Jarl Name" / "Name"), either way, or the first name alone ("Hilde" for "Hilde the
+ * Lioness"); then a near spelling. Only when exactly one person fits.
+ */
+function covMatchPresent(string $want, array $present): ?string
+{
+    $b = covBareName($want);
+    if ($b === "") {
+        return null;
+    }
+    $exact = [];
+    $loose = [];
+    $near = [];
+    foreach ($present as $name) {
+        $nb = covBareName($name);
+        if ($nb === "") {
+            continue;
+        }
+        if ($nb === $b) {
+            $exact[] = $name;
+        } elseif (mb_strlen($b) >= 3 && mb_strlen($nb) >= 3
+            && (str_ends_with($nb, " " . $b) || str_ends_with($b, " " . $nb) || str_starts_with($nb, $b . " "))) {
+            $loose[] = $name;
+        } elseif (mb_strlen($b) >= 4) {
+            similar_text($b, $nb, $pct);
+            if ($pct >= 85) {
+                $near[] = $name;
+            }
+        }
+    }
+    foreach ([$exact, $loose, $near] as $found) {
+        if (count($found) === 1 || (count($found) > 1 && count(array_unique(array_map('covBareName', $found))) === 1)) {
+            return $found[0];
+        }
+        if (count($found) > 1) {
+            return null; // two people fit: better refused than the wrong one
+        }
+    }
+    return null;
+}
+
+/**
+ * A target of comma separated names (also "and", ";", "&", "+", "/") with every name placed
+ * where possible (see above). $keepRe: a pattern for words that are not names (the group
+ * words of Enthrall and Spare), left as they are.
+ */
+function covResolveTargets(string $csv, string $agent, string $keepRe = ""): string
+{
+    $csv = trim($csv);
+    if ($csv === "" || $csv === "-") {
+        return $csv;
+    }
+    $player = covBareName(strval($GLOBALS["PLAYER_NAME"] ?? ""));
+    $self = covBareName($agent);
+    $present = null;
+    $out = [];
+    foreach (preg_split('/\s*[,;&+\/]\s*|\s+(?:and|и|і|та)\s+/iu', $csv) as $t) {
+        $t = trim($t);
+        $b = covBareName($t);
+        if ($t === "" || $t === "-" || $b === "") {
+            continue;
+        }
+        if (stripos($t, "RefID") !== false || ($keepRe !== "" && preg_match($keepRe, $b))) {
+            $r = $t; // a RefID is exact
+        } elseif (in_array($b, COV_PLAYER_WORDS, true) || ($player !== "" && $b === $player)) {
+            $r = "player";
+        } elseif (in_array($b, COV_SELF_WORDS, true) || $b === $self) {
+            $r = $agent;
+        } else {
+            $present = $present ?? covPresentNames();
+            $r = covMatchPresent($t, $present);
+            if ($r !== null && $player !== "" && covBareName($r) === $player) {
+                $r = "player"; // CHIM lists the player among the people close by too
+            }
+            if ($r === null && $player !== "" && mb_strlen($b) >= 3
+                && (str_starts_with($player, $b . " ") || str_ends_with($b, " " . $player) || str_starts_with($b, $player . " "))) {
+                $r = "player"; // the player's first name, the name with a title or a surname
+            }
+            $r = $r ?? $t;
+        }
+        if (!in_array(mb_strtolower($r), array_map('mb_strtolower', $out), true)) {
+            $out[] = $r;
+        }
+    }
+    $resolved = implode(", ", $out);
+    if ($resolved !== $csv) {
+        covLog("target \"{$csv}\" -> \"{$resolved}\"");
+    }
+    return $resolved;
+}
+
 // ---------------------------------------------------------------- refused actions
 
 /** the LLM-facing names of this bridge's actions, for the refusal event */
@@ -377,6 +528,50 @@ function covRefusalEvent(string $data): ?string
     $agent = trim(explode("~", $parts[2])[0]);
     covLog("refused {$parts[1]} by {$agent}: {$result}");
     return "({$agent} tried " . COV_ACTION_NAMES[$parts[1]] . ", but it did not happen - {$result})";
+}
+
+/**
+ * A refusal because nobody by the given name was found, as an instruction instead of the
+ * refusal event: CHIM lets an agent act only on the player's turn and on instructions, so
+ * after the event the agent could only talk about it - and said the player had vanished.
+ * The instruction lists who is here and lets the agent call the action once more with the
+ * right name. Once per agent and minute; a second miss in that time stays a plain refusal.
+ */
+function covNameRetry(string $data): ?string
+{
+    $parts = explode("@", $data, 4);
+    if (count($parts) < 4 || !isset(COV_ACTION_NAMES[$parts[1]])) {
+        return null;
+    }
+    if (!preg_match('/^cannot[^:]*: nobody called (.+?) is here/i', trim($parts[3]), $m)) {
+        return null;
+    }
+    $agent = trim(explode("~", $parts[2])[0]);
+    $retries = covOptGet(COV_PLUGIN . "_name_retry") ?? [];
+    $now = time();
+    if ($agent === "" || $now - intval($retries[$agent] ?? 0) < 60) {
+        return null;
+    }
+    $retries[$agent] = $now;
+    covOptSet(COV_PLUGIN . "_name_retry", array_filter($retries, function ($t) use ($now) {
+        return $now - intval($t) < 3600;
+    }));
+
+    $player = trim(strval($GLOBALS["PLAYER_NAME"] ?? "")) ?: "the player";
+    $people = [$player];
+    foreach (covPresentNames() as $n) {
+        $n = trim(strval(preg_replace('/\s*\[RefID[^\]]*\]/iu', '', $n)));
+        if ($n !== "" && covBareName($n) !== covBareName($agent) && count($people) < 16
+            && !in_array(covBareName($n), array_map('covBareName', $people), true)) {
+            $people[] = $n;
+        }
+    }
+    $action = COV_ACTION_NAMES[$parts[1]];
+    covLog("name not found for {$agent} ({$m[1]}): one more try");
+    return "The Narrator: {$agent} tried {$action}, but nobody called {$m[1]} could be found - that name did not match anyone here; nobody has left or vanished. "
+        . "The people here are: " . implode(", ", $people) . ". "
+        . "If {$agent} meant one of them, {$agent} calls {$action} again right now with that exact name in target (leave target empty for {$player}), and says nothing about the mix-up. "
+        . "Otherwise {$agent} says one short line in character and drops it.";
 }
 
 /**
@@ -453,7 +648,7 @@ function covSpareCue(): string
 function covDownedInstruction(string $data): string
 {
     $player = strval($GLOBALS["PLAYER_NAME"] ?? "the player");
-    // "Context location: ...)Lucius:(<names> - ... near <lord>)": the event itself, and the
+    // "Context location: ...)Aldric:(<names> - ... near <lord>)": the event itself, and the
     // lord from it - in preprocessing CHIM has not set HERIKA_NAME to the agent yet (it said
     // "The Narrator binds ...")
     $what = preg_match('/\(([^()]*)\)\s*$/u', $data, $m) ? trim($m[1]) : trim($data, " ()");

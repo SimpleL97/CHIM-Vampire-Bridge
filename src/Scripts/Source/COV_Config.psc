@@ -7,7 +7,7 @@ string Function ModName() global
 EndFunction
 
 string Function Version() global
-	Return "1.0.0"
+	Return "1.0.1"
 EndFunction
 
 bool Function B(string id) global
@@ -135,7 +135,7 @@ string Function BareName(string s) global
 	If i > 0
 		s = StringUtil.Substring(s, 0, i)
 	EndIf
-	i = StringUtil.Find(s, " (") ; "Inguya (dead)"
+	i = StringUtil.Find(s, " (") ; "Gunnar (dead)"
 	If i > 0
 		s = StringUtil.Substring(s, 0, i)
 	EndIf
@@ -146,6 +146,43 @@ EndFunction
 bool Function NameIs(Actor a, string name) global
 	string d = a.GetDisplayName()
 	Return d == name || BareName(d) == BareName(name)
+EndFunction
+
+; how well the actor goes by this name: 2 the same name (NameIs), 1 a looser fit - a title
+; in front of it ("Jarl Name" / "Name") either way, or the first name alone ("Hilde" for
+; "Hilde the Lioness") either way, 0 not at all
+int Function NameScore(Actor a, string name) global
+	If !a || name == ""
+		Return 0
+	EndIf
+	If NameIs(a, name)
+		Return 2
+	EndIf
+	string bd = BareName(a.GetDisplayName())
+	string bn = BareName(name)
+	If bd == "" || bn == ""
+		Return 0
+	EndIf
+	If EndsWithWord(bn, bd) || EndsWithWord(bd, bn) || (StringUtil.GetLength(bn) >= 3 && StringUtil.Find(bd, bn + " ") == 0) || (StringUtil.GetLength(bd) >= 3 && StringUtil.Find(bn, bd + " ") == 0)
+		Return 1
+	EndIf
+	Return 0
+EndFunction
+
+; s ends with " " + w
+bool Function EndsWithWord(string s, string w) global
+	int ls = StringUtil.GetLength(s)
+	int lw = StringUtil.GetLength(w)
+	If lw < 3 || ls <= lw + 1
+		Return False
+	EndIf
+	Return StringUtil.Substring(s, ls - lw - 1) == " " + w
+EndFunction
+
+; what the model may call the player in a target besides the name
+bool Function IsPlayerWord(string s) global
+	s = BareName(s)
+	Return s == "player" || s == "the player" || s == "self" || s == "you" || s == "narrator" || s == "the narrator" || s == "thenarrator" || s == "dragonborn" || s == "the dragonborn"
 EndFunction
 
 Actor Function RefActor(string s) global

@@ -1,6 +1,24 @@
 CHIM Vampire Bridge - changelog
 ================================
 
+1.0.1
+- Fix: Feed_On_Blood, Enthrall, Release_Thrall, Thrall_Task and Spare were often refused as
+  "<name> is not here" although that person was right there. The game only knew the exact
+  name, while the AI writes names in many ways. Now these all work:
+  - you, as "The Narrator", "you", "player", your first name alone, your name with a title or
+    a surname, or the name your character has in CHIM's settings when it differs from the game;
+  - others the way CHIM lists them to the AI: "Name [Bandit Defender]", "Name [RefID: ...]",
+    "Jarl Name", "Name (dead)";
+  - a first name alone, or a small misspelling;
+  - "me", for the agent itself.
+  The server matches every name against the people CHIM sees around you; group words
+  ("women", "the dead", "everyone") and tasks stay as they are. The game compares names
+  the same loose way. An exact name always wins over a loose one, and the living over the
+  dead.
+- When a name still matches nobody, the agent is told who is here and may call the action
+  once more with the right name, instead of only answering that it did not work. Once per
+  agent and minute.
+
 1.0.0
 - First release: the vampire features of CHIM OStim Bridge 1.2 as a mod of their own,
   with their own plugin, scripts, MCM and CHIM actions (ExtCmdCOV_*). They work as

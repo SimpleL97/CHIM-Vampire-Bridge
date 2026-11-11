@@ -10,7 +10,7 @@ where these options lived until its version 1.2. Run: python3 -I localize.py
 import json, os
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 LANGS = ["ENGLISH", "RUSSIAN", "UKRAINIAN", "GERMAN", "FRENCH", "SPANISH", "ITALIAN",
          "POLISH", "CZECH", "PORTUGUESE", "JAPANESE", "CHINESE"]
 

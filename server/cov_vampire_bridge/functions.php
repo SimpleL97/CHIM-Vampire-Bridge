@@ -168,6 +168,10 @@ $GLOBALS["action_post_process_fnct_ex"][] = function ($actions) {
             }
             // "~" separates the fields on the Papyrus side; "|" separates the action line itself
             $parameter = trim(str_replace(["~", "|"], " ", $parameter));
+            if (in_array($codeName, ["ExtCmdCOV_Feed", "ExtCmdCOV_Enthrall", "ExtCmdCOV_Spare", "ExtCmdCOV_Release", "ExtCmdCOV_Task"], true)) {
+                // the names as the game knows them (cov_lib.php); group words and tasks stay
+                $parameter = covResolveTargets($parameter, $actorName, COV_NOT_A_NAME);
+            }
             $parts[2] = $actionName . "@" . $actorName . "~" . ($parameter === "" ? "-" : $parameter);
             if (isset($GLOBALS["COV_ACTIONS"][$codeName]["params"]["item"])) {
                 $item = trim(str_replace(["~", "|"], " ", strval($item ?? "")));
